@@ -57,11 +57,16 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 }
 
 extern RC closePageFile (SM_FileHandle *fHandle) {
-	if(RC error_code = checkDoesFileHandleExist(fHandle) !=  RC_OK)
+	//Check and close file return error if any
+	int close = fclose(fHandle->mgmtInfo);
+	if(close == 0)
 	{
-		return error_code;
+		return RC_OK;
 	}
-	fclose(fHandle->mgmtInfo);
+	else
+	{
+		return RC_FILE_NOT_FOUND;
+	}
 }
 
 extern RC destroyPageFile (char *fileName) {
