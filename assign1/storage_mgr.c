@@ -12,7 +12,7 @@ extern RC createPageFile (char *fileName) {
 	// Open a new file for writing
 	FILE *pageFile = fopen(fileName, "wb");
 
-	// Allocate one PAGE_SIZE space in memory and fill with /0 characters
+	// Allocate one PAGE_SIZE space in memory and fill with \0 characters
 	char *buffer = (char *) calloc(PAGE_SIZE, sizeof(char));
 
 	// Write the buffer of zeroes to into the file
