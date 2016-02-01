@@ -57,6 +57,7 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 }
 
 extern RC closePageFile (SM_FileHandle *fHandle) {
+	
 	//Check and close file return error if any
 	int close = fclose(fHandle->mgmtInfo);
 	if(close == 0)
