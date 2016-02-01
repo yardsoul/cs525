@@ -66,7 +66,12 @@ extern RC closePageFile (SM_FileHandle *fHandle) {
 }
 
 extern RC destroyPageFile (char *fileName) {
-
+	int removed = remove(fileName);
+	if (removed == 0) {
+		return RC_OK;
+	} else {
+		return RC_FILE_NOT_FOUND;
+	}
 }
 
 /* reading blocks from disc */
