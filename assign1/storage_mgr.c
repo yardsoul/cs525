@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "storage_mgr.h"
 #include "dberror.h"
+#include <sys/stat.h>
 
 /* manipulating page files */
 extern void initStorageManager (void) {
@@ -37,14 +38,18 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 		// https://stackoverflow.com/questions/8236/how-do-you-determine-the-size-of-a-file-in-c
 		// https://www.securecoding.cert.org/confluence/display/c/FIO19-C.+Do+not+use+fseek()+and+ftell()+to+compute+the+size+of+a+regular+file
 
+		struct stat st;
+		stat(fileName, &st);
+		size = st.st_size;
+
+		nPages = size/PAGE_SIZE;
 
 		fHandle->fileName = fileName;
-		// fHandle->totalNumPages = 
+		fHandle->totalNumPages = (int) nPages;
 		fHandle->curPagePos = 0;
 		fHandle->mgmtInfo = pageFile;
 
 	}
-
 	return RC_OK;
 }
 
