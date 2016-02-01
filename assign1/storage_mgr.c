@@ -52,7 +52,6 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 		fHandle->totalNumPages = nPages;
 		fHandle->curPagePos = 0;
 		fHandle->mgmtInfo = pageFile;
-
 	}
 	return RC_OK;
 }
