@@ -33,19 +33,15 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 	if (pageFile == NULL) {
 		return RC_FILE_NOT_FOUND;
 	} else {
-		// TODO: Some logic to get the size of the file
-		// https://stackoverflow.com/questions/238603/how-can-i-get-a-files-size-in-c
-		// https://stackoverflow.com/questions/8236/how-do-you-determine-the-size-of-a-file-in-c
-		// https://www.securecoding.cert.org/confluence/display/c/FIO19-C.+Do+not+use+fseek()+and+ftell()+to+compute+the+size+of+a+regular+file
-
+		
 		struct stat st;
 		stat(fileName, &st);
-		size = st.st_size;
+		int size = st.st_size;
 
-		nPages = size/PAGE_SIZE;
+		int nPages = (int) size/PAGE_SIZE;
 
 		fHandle->fileName = fileName;
-		fHandle->totalNumPages = (int) nPages;
+		fHandle->totalNumPages = nPages;
 		fHandle->curPagePos = 0;
 		fHandle->mgmtInfo = pageFile;
 
