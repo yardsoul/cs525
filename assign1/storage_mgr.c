@@ -63,6 +63,7 @@ extern RC closePageFile (SM_FileHandle *fHandle) {
 		return error_code;
 	}
 	fclose(fHandle->mgmtInfo);
+	return RC_OK;
 }
 
 extern RC destroyPageFile (char *fileName) {
