@@ -4,6 +4,14 @@
 #include "dberror.h"
 #include <sys/stat.h>
 
+
+RC checkDoesFileHandleExist(SM_FileHandle *fHandle)
+{
+	if(fHandle == NULL)
+		return RC_SM_NOT_FOUND;
+	else
+		return RC_OK;
+}
 /* manipulating page files */
 extern void initStorageManager (void) {
 
@@ -50,7 +58,11 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 }
 
 extern RC closePageFile (SM_FileHandle *fHandle) {
-
+	if(RC error_code = checkDoesFileHandleExist(fHandle) !=  RC_OK)
+	{
+		return error_code;
+	}
+	fclose(fHandle->mgmtInfo);
 }
 
 extern RC destroyPageFile (char *fileName) {
