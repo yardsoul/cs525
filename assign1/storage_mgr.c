@@ -60,11 +60,19 @@ extern RC closePageFile (SM_FileHandle *fHandle) {
 	//Check and close file return error if any
 	int close = fclose(fHandle->mgmtInfo);
 	if(close == 0)
+<<<<<<< HEAD
 	{
 		return RC_OK;
 	}
 	else
 	{
+=======
+	{
+		return RC_OK;
+	}
+	else
+	{
+>>>>>>> b67caef00b81d0460c31bc9956f292d0e7171dc6
 		return RC_FILE_NOT_FOUND;
 	}
 }
