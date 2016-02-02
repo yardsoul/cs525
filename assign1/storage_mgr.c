@@ -81,7 +81,25 @@ extern RC destroyPageFile (char *fileName) {
 
 /* reading blocks from disc */
 extern RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
-
+	int pageFirstByte = pageNum*PAGE_SIZE*sizeof(char);
+	
+	//Check if page does exist 
+	if(fHandle->totalNumPages < pageNum)
+	{
+		return RC_READ_NON_EXISTING_PAGE;
+	}
+	else
+	{
+		//Set current page position
+		fHandle->curPagePos=pageNum
+		//allocate memory to memPage
+		memPage = (char*)malloc(sizeof(char)*PAGE_SIZE)
+		//Read and write block to memPage (Expected number of element read should be return)
+		if(fread(memPage,1,PAGE_SIZE,fHandle->mgmtInfo)==PAGE_SIZE)
+			return RC_OK;
+		else
+			return RC_READ_NON_EXISTING_PAGE;
+	}
 }
 
 extern int getBlockPos (SM_FileHandle *fHandle) {
