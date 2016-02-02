@@ -7,7 +7,7 @@
 
 RC checkDoesFileHandleExist(SM_FileHandle *fHandle)
 {
-	if(fHandle == NULL)
+	if (fHandle == NULL)
 		return RC_SM_NOT_FOUND;
 	else
 		return RC_OK;
@@ -41,12 +41,12 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 	if (pageFile == NULL) {
 		return RC_FILE_NOT_FOUND;
 	} else {
-		
+
 		struct stat st;
 		stat(fileName, &st);
 		int size = st.st_size;
 
-		int nPages = (int) size/PAGE_SIZE;
+		int nPages = (int) size / PAGE_SIZE;
 
 		fHandle->fileName = fileName;
 		fHandle->totalNumPages = nPages;
@@ -57,10 +57,10 @@ extern RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 }
 
 extern RC closePageFile (SM_FileHandle *fHandle) {
-	
+
 	//Check and close file return error if any
 	int close = fclose(fHandle->mgmtInfo);
-	if(close == 0)
+	if (close == 0)
 	{
 		return RC_OK;
 	}
@@ -85,7 +85,7 @@ extern RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage)
 }
 
 extern int getBlockPos (SM_FileHandle *fHandle) {
-
+	return fHandle->curPagePos;
 }
 
 extern RC readFirstBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
