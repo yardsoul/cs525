@@ -84,7 +84,7 @@ extern RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage)
 	int pageFirstByte = pageNum*PAGE_SIZE*sizeof(char);
 	
 	//Check if page does exist 
-	if(fHandle->totalNumPages < pageNum)
+	if(fHandle->totalNumPages < pageNum || pageNum < 0)
 	{
 		return RC_READ_NON_EXISTING_PAGE;
 	}
@@ -107,23 +107,25 @@ extern int getBlockPos (SM_FileHandle *fHandle) {
 }
 
 extern RC readFirstBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
-
+	return readBlock(0, fHandle, memPage);
 }
 
 extern RC readPreviousBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
-
+	int previousBlock = fHandle->curPagePos-1;
+	return readBlock(previousBlock, fHandle, memPage);
 }
 
 extern RC readCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
-
+	return readBlock(fHandle->curPagePos, fHandle, memPage);
 }
 
 extern RC readNextBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
-
+	int nextBlock = fHandle->curPagePos+1;
+	return readBlock(nextBlock, fHandle, memPage);
 }
 
 extern RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
-
+	return readBlock(fHandle->totalNumPages, fHandle, memPage);
 }
 
 /* writing blocks to a page file */
