@@ -154,4 +154,15 @@ extern RC appendEmptyBlock (SM_FileHandle *fHandle) {
 
 extern RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
 
+	checkDoesFileHandleExist(fHandle);
+
+	if (fHandle->totalNumPages < numberOfPages)
+		 
+		do {
+			appendEmptyBlock(fHandle);
+		} while (fHandle->totalNumPages < numberOfPages);
+		
+	else
+		return RC_OK;
+
 }
