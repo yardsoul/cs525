@@ -143,9 +143,31 @@ extern RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 }
 
 extern RC appendEmptyBlock (SM_FileHandle *fHandle) {
+	checkDoesFileHandleExist(fHandle);
+	
+	fseek(pageFile, 0, SEEK_End);
+	int len = ftell(pageFile);
 
+	char buffer[PAGE_SIZE] = "";
+	fwrite(buffer, sizeof(buffer), 1, pageFile);
+	
+	if(len + sizeof(buffer) != ftell(pageFile))
+		return RC_WRITE_FAILED;
+	
+	fHandle -> totalNumPages ++;
 }
 
 extern RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
+
+	checkDoesFileHandleExist(fHandle);
+
+	if (fHandle->totalNumPages < numberOfPages)
+		 
+		do {
+			appendEmptyBlock(fHandle);
+		} while (fHandle->totalNumPages < numberOfPages);
+		
+	else
+		return RC_OK;
 
 }
