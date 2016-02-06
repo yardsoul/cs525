@@ -160,7 +160,10 @@ RC destroyPageFile (char *fileName) {
 	}
 }
 
-/* reading blocks from disc */
+/************************************************************
+ *              reading blocks from disc                    *
+ ************************************************************/
+
 RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	int pageFirstByte = pageNum * PAGE_SIZE * sizeof(char);
 
@@ -365,7 +368,10 @@ RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	return readBlock(fHandle->totalNumPages, fHandle, memPage);
 }
 
-/* writing blocks to a page file */
+/************************************************************
+ *            writing blocks to a page file                 *
+ ************************************************************/
+
 RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 
 }
