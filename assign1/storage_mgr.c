@@ -113,6 +113,31 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            closePageFile (SM_FileHandle *fHandle)
+*
+* DESCRIPTION :     Close page file which already opened stored information in fHandle.
+*                   If closing the file is successful, then return RC_OK,
+*                   else return error.
+*
+* PARAMETERS
+*            SM_Filehandle * fHandle         An existing file handle
+*
+* RETURN :
+*            Type:   RC                     Returned code:
+*            Values: RC_OK                  file created successfully
+*					 RC_FILE_NOT_FOUND      file does not exist
+*
+* AUTHOR :
+*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	  WHO     				                                      DETAIL
+*            -----------    -----------------------------------------------------      ---------------------------------
+*            2015-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
+*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
+*
+*******************************************************************/
 RC closePageFile (SM_FileHandle *fHandle) {
 
 	//Check and close file return error if any
@@ -160,10 +185,32 @@ RC destroyPageFile (char *fileName) {
 	}
 }
 
-/************************************************************
- *              reading blocks from disc                    *
- ************************************************************/
-
+/*******************************************************************
+* NAME :            readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage)
+*
+* DESCRIPTION :     Seek into specific page and perform read page in to memory if it valid
+*
+* PARAMETERS
+*            int pageNum                     Number of page needed to be read
+*            SM_Filehandle * fHandle         An existing file handle
+*            SM_PageHandle memPage           Memory which wanted to load data into
+*
+* RETURN :
+*            Type:   RC                     Returned code:
+*            Values: RC_OK                  file created successfully
+*					RC_READ_NON_EXISTING_PAGE      page file does not exist
+*
+* AUTHOR :
+*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	  WHO     				                                      DETAIL
+*            -----------    -----------------------------------------------------      ---------------------------------
+*            2015-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
+*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Add missing fseek
+*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
+*
+*******************************************************************/
 RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	int pageFirstByte = pageNum * PAGE_SIZE * sizeof(char);
 
@@ -179,6 +226,7 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 		//allocate memory to memPage
 		memPage = (char*)malloc(sizeof(char) * PAGE_SIZE);
 		//Read and write block to memPage (Expected number of element read should be return)
+		fseek(fHandle->fileName,pageFirstByte,SEEK_END);
 		if (fread(memPage, 1, PAGE_SIZE, fHandle->mgmtInfo) == PAGE_SIZE)
 		{
 
