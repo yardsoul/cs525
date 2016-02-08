@@ -423,8 +423,36 @@ RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 
 }
-
+/*******************************************************************
+* NAME :            RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
+*
+* DESCRIPTION :     Write the current page in a file.
+*
+* PARAMETERS:
+*            SM_Filehandle * fHandle         An existing file handle
+*            SM_PageHandle memPage           Pointer to an area in memory storing the data of a page
+*
+* RETURN :
+*            Type:   RC                             Returned code:
+*            Values: RC_OK                          file write successfully
+*		     RC_WRITE_FAILED                failed to write
+*
+* AUTHOR :
+*			Yung Chi Shih <yshih2@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2015-02-02		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
+*            2015-02-07     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
+	//check if the file handle exists
+	checkDoesFileHandleExist(fHandle);
+	
+	// Call writeBlock to write current page and return its RC
+	return writeBlock(fHandle->curPagePos, fHandle, memPage);
 
 }
 /*******************************************************************
