@@ -427,19 +427,50 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 
 }
+/*******************************************************************
+* NAME :            RC appendEmptyBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
+*
+* DESCRIPTION :     Append a new page at the end of the file
+*
+* PARAMETERS:
+*            SM_Filehandle * fHandle         An existing file handle
+*
+* RETURN :
+*            Type:   RC                             Returned code:
+*            Values: RC_WRITE_FAILED                failed to write  
+*					 
+*
+* AUTHOR :
+*			 Yung Chi Shih <yshih2@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2015-02-02		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
+*            2015-02-07    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 
 RC appendEmptyBlock (SM_FileHandle *fHandle) {
+	//check if the file handle exists
 	checkDoesFileHandleExist(fHandle);
 
+	//sets the file position of the stream to the end of file
 	fseek(pageFile, 0, SEEK_End);
+	
+	//gets the current file position
 	int len = ftell(pageFile);
-
+	
+	//initializes an array with a size of PAGE_SIZE
 	char buffer[PAGE_SIZE] = "";
+	//writes data 
 	fwrite(buffer, sizeof(buffer), 1, pageFile);
-
+	
+	//check if a new block of size PAGE_SIZE is appeneded
 	if (len + sizeof(buffer) != ftell(pageFile))
 		return RC_WRITE_FAILED;
-
+		
+	//increments the total number of pages
 	fHandle -> totalNumPages ++;
 }
 
