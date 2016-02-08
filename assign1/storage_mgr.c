@@ -5,6 +5,29 @@
 #include <sys/stat.h>
 
 
+/*******************************************************************
+* NAME :            checkDoesFileHandleExist(SM_FileHandle *fHandle)
+*
+* DESCRIPTION :     Check existing of file handle
+*
+* PARAMETERS
+*            SM_Filehandle * fHandle         File handle that needed to be check
+*
+* RETURN :
+*            Type:   RC                     Returned code:
+*            Values: RC_OK                  file handle exist
+*					RC_SM_NOT_FOUND          file handle not exist
+*
+* AUTHOR :
+*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	  WHO     				                                      DETAIL
+*            -----------    -----------------------------------------------------      ---------------------------------
+*            2015-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
+*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Add missing fseek
+*
+*******************************************************************/
 RC checkDoesFileHandleExist(SM_FileHandle *fHandle)
 {
 	if (fHandle == NULL)
