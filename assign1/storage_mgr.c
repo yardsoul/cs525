@@ -419,9 +419,65 @@ RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 /************************************************************
  *            writing blocks to a page file                 *
  ************************************************************/
-
+/*******************************************************************
+* NAME :            RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage)
+*
+* DESCRIPTION :     Write a page to disk using an absolute position.
+*
+* PARAMETERS:
+* 	     int pageNum		     The pageNumth block that the method writes
+*            SM_Filehandle * fHandle         An existing file handle
+*            SM_PageHandle memPage           Pointer to an area in memory storing the data of a page
+*
+* RETURN :
+*            Type:   RC                             Returned code:
+*            Values: RC_OK                          file write successfully
+*		     RC_WRITE_FAILED                failed to write
+*
+* AUTHOR :
+*			Yung Chi Shih <yshih2@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2015-02-08		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
+*            2015-02-08     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
-
+	//check if file handle exists
+	checkDoesFileHandleExist(fHandle);
+	
+	//check if the pageNumth block that the method writes is not less than 0
+	if (pageNum < 0)
+		return RC_WRITE_FAILED;
+	
+	//increases the totalNumPages if it is less than the pageNum
+	if(pageNum > fHandle-> totalNumPages){
+		int return_code = ensureCapacity(pageNum, fHandle);
+		if (RC_OK != return_code)
+			return return_code;
+	}
+	
+	//sets the file pointer point to a structure that contains information about the file
+	FILE *pageFile = fHandle->mgmtInfo;
+	
+	//declares the number of bytes to offset
+	long int offset = pageNum * PAGE_SIZE;
+	
+	//gets the current file position
+	int len = ftell(pageFile);
+	
+	//sets the file position of the stream to beginning of file
+	fseek(pageFile, offset, SEEK_SET);
+	
+	//writes new page
+	fwrite(memPage, PAGE_SIZE, 1, pageFile);
+	
+	//check if a new page is added
+	if (len + PAGE_SIZE != ftell(pageFile))
+		return RC_WRITE_FAILED;
+	
 }
 /*******************************************************************
 * NAME :            RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
@@ -443,7 +499,7 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
+*            2015-02-07		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
 *            2015-02-07     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
@@ -476,13 +532,17 @@ RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 *            -----------    ---------------------------------------  ---------------------------------
 *            2015-02-02		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
 *            2015-02-07    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*            2015-02-08    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added file pointer declaration
 *
 *******************************************************************/
 
 RC appendEmptyBlock (SM_FileHandle *fHandle) {
 	//check if the file handle exists
 	checkDoesFileHandleExist(fHandle);
-
+	
+	//sets the file pointer point to a structure that contains information about the file
+	FILE *pageFile = fHandle->mgmtInfo;
+	
 	//sets the file position of the stream to the end of file
 	fseek(pageFile, 0, SEEK_End);
 	
