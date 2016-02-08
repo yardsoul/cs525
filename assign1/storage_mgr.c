@@ -4,38 +4,6 @@
 #include "dberror.h"
 #include <sys/stat.h>
 
-
-/*******************************************************************
-* NAME :            checkDoesFileHandleExist(SM_FileHandle *fHandle)
-*
-* DESCRIPTION :     Check existing of file handle
-*
-* PARAMETERS
-*            SM_Filehandle * fHandle         File handle that needed to be check
-*
-* RETURN :
-*            Type:   RC                     Returned code:
-*            Values: RC_OK                  file handle exist
-*					RC_SM_NOT_FOUND          file handle not exist
-*
-* AUTHOR :
-*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
-*
-* HISTORY :
-*            DATE       	  WHO     				                                      DETAIL
-*            -----------    -----------------------------------------------------      ---------------------------------
-*            2015-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
-*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Add missing fseek
-*
-*******************************************************************/
-RC checkDoesFileHandleExist(SM_FileHandle *fHandle)
-{
-	if (fHandle == NULL)
-		return RC_SM_NOT_FOUND;
-	else
-		return RC_OK;
-}
-
 void initStorageManager (void) {
 
 }
@@ -232,27 +200,29 @@ RC destroyPageFile (char *fileName) {
 *            2015-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
 *            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Add missing fseek
 *            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
+*			 2015-02-08		Adrian Tirados <atirados@hawk.iit.edu>					   Added check for opened file
 *
 *******************************************************************/
 RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	int pageFirstByte = pageNum * PAGE_SIZE * sizeof(char);
 
+	// Check if file is opened
+	if (fHandle->mgmtInfo == NULL) {
+		return RC_FILE_NOT_FOUND;
+	}
 	//Check if page does exist
-	if (fHandle->totalNumPages < pageNum ||  pageNum < 0)
+	if (0 > pageNum || fHandle->totalNumPages < pageNum)
 	{
 		return RC_READ_NON_EXISTING_PAGE;
 	}
 	else
 	{
-		//Set current page position
-		fHandle->curPagePos = pageNum;
-		//allocate memory to memPage
-		memPage = (char*)malloc(sizeof(char) * PAGE_SIZE);
 		//Read and write block to memPage (Expected number of element read should be return)
-		fseek(fHandle->fileName,pageFirstByte,SEEK_END);
+		fseek(fHandle->mgmtInfo, pageFirstByte, SEEK_SET);
 		if (fread(memPage, 1, PAGE_SIZE, fHandle->mgmtInfo) == PAGE_SIZE)
 		{
-
+			//Set current page position
+			fHandle->curPagePos = pageNum;
 			return RC_OK;
 		}
 		else
@@ -442,6 +412,7 @@ RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 /************************************************************
  *            writing blocks to a page file                 *
  ************************************************************/
+
 /*******************************************************************
 * NAME :            RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage)
 *
@@ -465,43 +436,33 @@ RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 *            -----------    ---------------------------------------  ---------------------------------
 *            2015-02-08		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
 *            2015-02-08     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*			 2015-02-08		Adrian Tirados <atirados@hawk.iit.edu>	  Fixed return code after running test
 *
 *******************************************************************/
 RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
-	//check if file handle exists
-	checkDoesFileHandleExist(fHandle);
-	
+
 	//check if the pageNumth block that the method writes is not less than 0
-	if (pageNum < 0)
+	if (0 > pageNum || fHandle->totalNumPages < pageNum)
 		return RC_WRITE_FAILED;
-	
-	//increases the totalNumPages if it is less than the pageNum
-	if(pageNum > fHandle-> totalNumPages){
-		int return_code = ensureCapacity(pageNum, fHandle);
-		if (RC_OK != return_code)
-			return return_code;
-	}
-	
+
 	//sets the file pointer point to a structure that contains information about the file
 	FILE *pageFile = fHandle->mgmtInfo;
-	
+
 	//declares the number of bytes to offset
 	long int offset = pageNum * PAGE_SIZE;
-	
-	//gets the current file position
-	int len = ftell(pageFile);
-	
+
 	//sets the file position of the stream to beginning of file
 	fseek(pageFile, offset, SEEK_SET);
-	
-	//writes new page
-	fwrite(memPage, PAGE_SIZE, 1, pageFile);
-	
-	//check if a new page is added
-	if (len + PAGE_SIZE != ftell(pageFile))
+
+	//check if the write is successful
+	if (fwrite(memPage, sizeof(char), PAGE_SIZE, pageFile) != PAGE_SIZE) {
 		return RC_WRITE_FAILED;
-	
+	} else {
+		fHandle->curPagePos = pageNum;
+		return RC_OK;
+	}
 }
+
 /*******************************************************************
 * NAME :            RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 *
@@ -527,13 +488,10 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 *
 *******************************************************************/
 RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
-	//check if the file handle exists
-	checkDoesFileHandleExist(fHandle);
-	
 	// Call writeBlock to write current page and return its RC
 	return writeBlock(fHandle->curPagePos, fHandle, memPage);
-
 }
+
 /*******************************************************************
 * NAME :            RC appendEmptyBlock (SM_FileHandle *fHandle, SM_PageHandle memPage)
 *
@@ -544,8 +502,8 @@ RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 *
 * RETURN :
 *            Type:   RC                             Returned code:
-*            Values: RC_WRITE_FAILED                failed to write  
-*					 
+*            Values: RC_WRITE_FAILED                failed to write
+*
 *
 * AUTHOR :
 *			 Yung Chi Shih <yshih2@hawk.iit.edu>
@@ -558,45 +516,49 @@ RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 *            2015-02-08    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added file pointer declaration
 *
 *******************************************************************/
-
 RC appendEmptyBlock (SM_FileHandle *fHandle) {
-	//check if the file handle exists
-	checkDoesFileHandleExist(fHandle);
-	
+
 	//sets the file pointer point to a structure that contains information about the file
 	FILE *pageFile = fHandle->mgmtInfo;
-	
+
+	char *buffer = (char *) calloc(PAGE_SIZE, sizeof(char));
+
 	//sets the file position of the stream to the end of file
-	fseek(pageFile, 0, SEEK_End);
-	
+	fseek(pageFile, 0, SEEK_END);
+
 	//gets the current file position
 	int len = ftell(pageFile);
-	
+
 	//initializes an array with a size of PAGE_SIZE
-	char buffer[PAGE_SIZE] = "";
-	//writes data 
-	fwrite(buffer, sizeof(buffer), 1, pageFile);
-	
+	// char buffer[PAGE_SIZE] = "";
+	//writes data
+	fwrite (buffer, sizeof(char), PAGE_SIZE, pageFile);
+
 	//check if a new block of size PAGE_SIZE is appeneded
-	if (len + sizeof(buffer) != ftell(pageFile))
+	if (len + sizeof(buffer) != ftell(pageFile)) {
+		free(buffer);
 		return RC_WRITE_FAILED;
-		
+	}
+
+	free(buffer);
+	fclose(pageFile);
 	//increments the total number of pages
-	fHandle -> totalNumPages ++;
+	(fHandle -> totalNumPages)++;
+	return RC_OK;
 }
 
 /*******************************************************************
 * NAME :            RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle)
 *
-* DESCRIPTION :     Increase page size of file to equal numberOfPages if it is less than numberOfPages. 
+* DESCRIPTION :     Increase page size of file to equal numberOfPages if it is less than numberOfPages.
 *
 * PARAMETERS:
 *            SM_Filehandle * fHandle         An existing file handle
 *
 * RETURN :
 *            Type:   RC                             Returned code:
-*            Values: RC_OK			                file page size is equal to or more than numberOfPages  
-*					 
+*            Values: RC_OK			                file page size is equal to or more than numberOfPages
+*
 *
 * AUTHOR :
 *			 Arpita Rathore <arathore@hawk.iit.edu>
@@ -608,19 +570,15 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 *            2015-02-07    	Arpita Rathore <arathore@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
-
 RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
-	//check if file handle exists
-	checkDoesFileHandleExist(fHandle);
 
 	//check if the file page size is less than numberOfPages
-	if (fHandle->totalNumPages < numberOfPages)
-		//call appendEmptyBlock to append an empty page, check again if size is still less than numberOfPages, continue appending a page until size is equal to numberOfPages 	
+	if (fHandle->totalNumPages < numberOfPages) {
+		//call appendEmptyBlock to append an empty page, check again if size is still less than numberOfPages, continue appending a page until size is equal to numberOfPages
 		do {
 			appendEmptyBlock(fHandle);
 		} while (fHandle->totalNumPages < numberOfPages);
-	//file page size is equal to or more than numberOfPages, appending is not needed	
-	else
-		return RC_OK;
-
+		//file page size is equal to or more than numberOfPages, appending is not needed
+	}
+	return RC_OK;
 }
