@@ -502,16 +502,41 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 	fHandle -> totalNumPages ++;
 }
 
-RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
+/*******************************************************************
+* NAME :            RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle)
+*
+* DESCRIPTION :     Increase page size of file to equal numberOfPages if it is less than numberOfPages. 
+*
+* PARAMETERS:
+*            SM_Filehandle * fHandle         An existing file handle
+*
+* RETURN :
+*            Type:   RC                             Returned code:
+*            Values: RC_OK			                file page size is equal to or more than numberOfPages  
+*					 
+*
+* AUTHOR :
+*			 Arpita Rathore <arathore@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2015-02-04		Arpita Rathore <arathore@hawk.iit.edu>   Initialization
+*            2015-02-07    	Arpita Rathore <arathore@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 
+RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
+	//check if file handle exists
 	checkDoesFileHandleExist(fHandle);
 
+	//check if the file page size is less than numberOfPages
 	if (fHandle->totalNumPages < numberOfPages)
-
+		//call appendEmptyBlock to append an empty page, check again if size is still less than numberOfPages, continue appending a page until size is equal to numberOfPages 	
 		do {
 			appendEmptyBlock(fHandle);
 		} while (fHandle->totalNumPages < numberOfPages);
-
+	//file page size is equal to or more than numberOfPages, appending is not needed	
 	else
 		return RC_OK;
 
