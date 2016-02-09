@@ -43,11 +43,19 @@ Milestone
 2016-02-06	Comments added
 2016-02-08	Read and write block methods completed
 2016-02-08	Compiled code
+2016-02-08	Tested code in local
+2016-02-08	Tested code remotely in fourier server
 
 
 Installation instructions
 --------------------------
+The team has provided a Makefile to make the installation easier. 
 
+To install the program, simply run the command 'make' in the folder where all the files are stored. This command will create a series of compiled .o files, and a single file called 'testOutput'. This file contains the compiled test case.
+
+To run the program, execute './testOutput' in the folder where it is stored. This will automatically run the desired tests.
+
+Finally, in order to clean the directory, execute 'make clean', which will delete all .o files, all .bin files and testOutput file as well.
 
 
 Function descriptions
