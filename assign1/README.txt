@@ -4,7 +4,6 @@ Storage Manager: Implements a storage manager that can read/write blocks to/from
 
 Personnel Information
 ----------------------
-
 Team members:
 Patipat Duangchalomnin
 Email: pduangchalomnin@hawk.iit.edu
@@ -25,7 +24,7 @@ Arpita Rathore (Team Representative)
 Email: arathore@hawk.iit.edu
 Github username: arathore1
 CWID: A20340002
-
+==========================================================================================================================
 
 File List
 ----------
@@ -45,9 +44,9 @@ Installation instructions
 -------------------------
 
 
-Function descriptions
---------------------------------------------------------------------------------------------------------------------------------
 
+Function descriptions
+----------------------
 NAME: RC createPageFile (char *fileName)
 DESCRIPTION: Create a new page file fileName. The initial size is one page. This method fills this single page with '\0' bytes.
 
@@ -93,17 +92,21 @@ DESCRIPTION: Append a new page at the end of the file.
 NAME: RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle)
 DESCRIPTION: Increase page size of file to equal numberOfPages if it is less than numberOfPages.
 
-================================================================================================================================
+===========================================================================================================================================
 Additional error codes: of all additional error codes
 ------------------------------------------------------
-RC_WRITE_FAILED                failed to write
-RC_READ_NON_EXISTING_PAGE      page does not exist
+RC_WRITE_FAILED					failed to write
+RC_READ_NON_EXISTING_PAGE		page does not exist
 RC_FILE_NOT_FOUND				file does not exist
 
 
 
 Data structure: main data structure used
 -----------------------------------------
+The two data structures used are File Handle SM_FileHandle and Page Handle SM_PageHandle. 
+SM_FileHandle is a representation of an open page file which stores the file name, total number of pages in the file, and current page position. 
+SM_PageHandle is a pointer to where the data of a page is stored in memory. 
+
 
 Extra credit: of all extra credits
 -----------------------------------
@@ -114,8 +117,12 @@ Additional files: of all additional files
 Test cases: of all additional test cases added
 -----------------------------------------------
 
+
+
 Problems solved
 ----------------
+This program implements a storage manager that can read blocks from a file on disk into memory and can write blocks from memory to a file on disk. It also provides methods for creating, opening, and closing files.
+
 
 Problems to be solved
 ----------------------
