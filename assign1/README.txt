@@ -108,10 +108,6 @@ DESCRIPTION: Increase page size of file to equal numberOfPages if it is less tha
 
 Additional error codes: of all additional error codes
 ------------------------------------------------------
-RC_WRITE_FAILED					    failed to write
-RC_READ_NON_EXISTING_PAGE		page does not exist
-RC_FILE_NOT_FOUND				    file does not exist
-
 
 
 Data structure: main data structure used
