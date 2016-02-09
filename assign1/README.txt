@@ -39,6 +39,11 @@ test_helper.h
 
 Milestone
 ----------
+2016-02-01	Initialization of methods
+2016-02-06	Comments added
+2016-02-08	Read and write block methods completed
+2016-02-08	Compiled code
+
 
 Installation instructions
 --------------------------
@@ -91,8 +96,8 @@ DESCRIPTION: Append a new page at the end of the file.
 
 NAME: RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle)
 DESCRIPTION: Increase page size of file to equal numberOfPages if it is less than numberOfPages.
-
 ============================================================================================================================
+
 Additional error codes: of all additional error codes
 ------------------------------------------------------
 RC_WRITE_FAILED					failed to write
