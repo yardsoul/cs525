@@ -32,8 +32,8 @@ void initStorageManager (void) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-01		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-01		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC createPageFile (char *fileName) {
@@ -75,8 +75,8 @@ RC createPageFile (char *fileName) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-01		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-01		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
@@ -125,8 +125,8 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 * HISTORY :
 *            DATE       	  WHO     				                                      DETAIL
 *            -----------    -----------------------------------------------------      ---------------------------------
-*            2015-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
-*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
+*            2016-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
+*            2016-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
 *
 *******************************************************************/
 RC closePageFile (SM_FileHandle *fHandle) {
@@ -162,8 +162,8 @@ RC closePageFile (SM_FileHandle *fHandle) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-01		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-01		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC destroyPageFile (char *fileName) {
@@ -197,10 +197,10 @@ RC destroyPageFile (char *fileName) {
 * HISTORY :
 *            DATE       	  WHO     				                                      DETAIL
 *            -----------    -----------------------------------------------------      ---------------------------------
-*            2015-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
-*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Add missing fseek
-*            2015-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
-*			 2015-02-08		Adrian Tirados <atirados@hawk.iit.edu>					   Added check for opened file
+*            2016-02-01	 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
+*            2016-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Add missing fseek
+*            2016-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
+*			 2016-02-08		Adrian Tirados <atirados@hawk.iit.edu>					   Added check for opened file
 *
 *******************************************************************/
 RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -249,8 +249,8 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 int getBlockPos (SM_FileHandle *fHandle) {
@@ -278,8 +278,8 @@ int getBlockPos (SM_FileHandle *fHandle) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC readFirstBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -307,8 +307,8 @@ RC readFirstBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC readPreviousBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -339,8 +339,8 @@ RC readPreviousBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC readCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -368,8 +368,8 @@ RC readCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC readNextBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -400,8 +400,8 @@ RC readNextBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
-*            2015-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*            2016-02-02		Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-06     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -434,9 +434,9 @@ RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-08		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
-*            2015-02-08     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
-*			 2015-02-08		Adrian Tirados <atirados@hawk.iit.edu>	  Fixed return code after running test
+*            2016-02-08		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
+*            2016-02-08     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*			 2016-02-08		Adrian Tirados <atirados@hawk.iit.edu>	  Fixed return code after running test
 *
 *******************************************************************/
 RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -483,8 +483,8 @@ RC writeBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-07		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
-*            2015-02-07     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*            2016-02-07		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
+*            2016-02-07     	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -511,9 +511,9 @@ RC writeCurrentBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-02		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
-*            2015-02-07    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
-*            2015-02-08    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added file pointer declaration
+*            2016-02-02		Yung Chi Shih <yshih2@hawk.iit.edu>   Initialization
+*            2016-02-07    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added comments and header comment
+*            2016-02-08    	Yung Chi Shih <yshih2@hawk.iit.edu>   Added file pointer declaration
 *
 *******************************************************************/
 RC appendEmptyBlock (SM_FileHandle *fHandle) {
@@ -566,8 +566,8 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 * HISTORY :
 *            DATE       	WHO     				                 DETAIL
 *            -----------    ---------------------------------------  ---------------------------------
-*            2015-02-04		Arpita Rathore <arathore@hawk.iit.edu>   Initialization
-*            2015-02-07    	Arpita Rathore <arathore@hawk.iit.edu>   Added comments and header comment
+*            2016-02-04		Arpita Rathore <arathore@hawk.iit.edu>   Initialization
+*            2016-02-07    	Arpita Rathore <arathore@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
 RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
