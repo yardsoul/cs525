@@ -21,13 +21,27 @@ typedef struct FrameInfo
 typedef struct BufferPoolInfo
 {
 	// Pointer to the Buffer Pool
-	FrameInfo * bufferPool;
+	FrameInfo *bufferPool;
 	// First frame in the Buffer Pool
 	FrameInfo *firstFrame;
 	// Last frame in the Buffer Pool
 	FrameInfo *lastFrame;
 
 } BufferPoolInfo;
+
+/************************************************************
+ *                 Replacement Strategies                   *
+ ************************************************************/
+
+// FIFO
+
+// LRU
+
+// CLOCK (Extra)
+
+// LFU (Extra)
+
+// LFU_K (Extra)
 
 /************************************************************
  *     Buffer Manager Interface Pool Handling               *
@@ -92,10 +106,78 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 }
 
 RC shutdownBufferPool(BM_BufferPool *const bm) {
+	// Get number of pages to iterate
+	int numPages = bm->numPages;
 
+	// Create the BufferPoolInfo pointer and point it to the mgmt information
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+
+	// Get the information about pinned pages and dirty pages
+	int *fixCounts = getFixCounts(bm);
+	bool *dirtyFlags = getDirtyFlags(bm);
+
+	// Check if there are any frames accessed by any client(s)
+	for (int i = 0; i < numPages; i++) {
+		// If there is any, abort shutdown
+		if (*(fixCounts + i) != 0) {
+			// TODO: Maybe create an extra error code for this?
+			return RC_WRITE_FAILED
+		}
+	}
+
+	// Check if there are any frames with unsaved changes
+	for (int i = 0; i < numPages; i++) {
+		// If there are dirty frames, save changes by calling forceFlushPool
+		if (*(dirtyFlags + i) == true) {
+			forceFlushPool(bm);
+			// Not need to keep checking
+			break;
+		}
+	}
+
+	free(buffPoolInfo);
+
+	return RC_OK;
 }
 
 RC forceFlushPool(BM_BufferPool *const bm) {
+	// Get number of pages to iterate
+	int numPages = bm->numPages;
+
+	char *fileName = bm->pageFile;
+	SM_FileHandle fileHandle;
+	SM_PageHandle pageHandle = (SM_PageHandle) malloc(sizeof(SM_PageHandle));
+
+	// Create the BufferPoolInfo pointer and point it to the mgmt information
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+
+	// Check for dirty flags
+	bool *dirtyFlags = getDirtyFlags(bm);
+
+	int *fixCounts = getFixCounts(bm);
+
+	for (int = 0; i < numPages; i++) {
+		if ((*(dirtyFlags + i) == true) && (*(fixCounts + i) == 0)) {
+			// Load frame
+			FrameInfo *frame = &(buffPoolInfo->bufferPool[i]);
+
+			PageNumber pageNum = frame->pageNumber;
+
+			// Copy frame to pageHandle
+			strcpy(pageHandle, frame->frameData);
+			// Open file
+			openPageFile(fileName, &fileHandle);
+			// Write page to disk
+			writeBlock(pageNum, &fileHandle, pageHandle);
+			// DO I NEED TO CLOSE IT?
+			closePageFile(&fileHandle);
+			// Set dirty flag as false
+			frame->isDirty = false;
+
+			// Increase number of pages written
+			// TODO!! Create a numWrittenPages counter in the struct!!
+		}
+	}
 
 }
 
@@ -129,10 +211,42 @@ PageNumber *getFrameContents (BM_BufferPool *const bm) {
 }
 
 bool *getDirtyFlags (BM_BufferPool *const bm) {
+	// TODO: Iterate through bufferPool array and copy the values (TRUE/FALSE)
+
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+
+	// Get number of pages to iterate
+	int numPages = bm->numPages;
+
+	// Create array of bools with numPages size
+	bool *dirtyFlags = (bool *) malloc(numPages * sizeof(bool));
+
+	// Iterate through the frames and fill this array
+	for (int i = 0; i < numPages; i++) {
+		dirtyFlags[i] = bufferPool[i].isDirty;
+	}
+
+	return dirtyFlags;
 
 }
 
 int *getFixCounts (BM_BufferPool *const bm) {
+	// TODO: Iterate through bufferPool array and copy the values (int)
+
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+
+	// Get number of pages to iterate
+	int numPages = bm->numPages;
+
+	int *fixCounts = (int *) malloc(numPages * sizeof(int));
+
+	for (int i = 0; i < numPages; i++) {
+		fixCounts[i] = bufferPool[i].fixCount;
+	}
+
+	return fixCounts;
 
 }
 
