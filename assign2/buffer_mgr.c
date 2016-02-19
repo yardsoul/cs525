@@ -26,7 +26,10 @@ typedef struct BufferPoolInfo
 	FrameInfo *firstFrame;
 	// Last frame in the Buffer Pool
 	FrameInfo *lastFrame;
-
+	// Number of pages read
+	int readNumber;
+	// Number of pages written
+	int writeNumber;
 } BufferPoolInfo;
 
 /************************************************************
@@ -56,7 +59,7 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 
 	// Initialize the Frames inside the Buffer Pool
 	// TODO: MAKE THIS A SEPARATE FUNCTION
-	// Use . notation or -> notation???
+
 	int i = 0;
 	while (i < numPages) {
 		// Allocate the memory for the Frame (same as a page)
@@ -95,6 +98,10 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 	// Assign the pointers to the first and last frames
 	buffPoolInfo->firstFrame = &bufferPool[0];
 	buffPoolInfo->lastFrame = &bufferPool[numPages - 1];
+
+	// Set number of reads and writes to 0
+	buffPoolInfo->readNumber = 0;
+	buffPoolInfo->writeNumber = 0;
 
 	// Fill the  BM_BufferPool struct
 	bm->pageFile = (char *) pageFileName;
@@ -173,12 +180,11 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 			closePageFile(&fileHandle);
 			// Set dirty flag as false
 			frame->isDirty = false;
-
 			// Increase number of pages written
-			// TODO!! Create a numWrittenPages counter in the struct!!
+			buffPoolInfo->writeNumber++;
+
 		}
 	}
-
 }
 
 /************************************************************
@@ -208,6 +214,19 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 
 PageNumber *getFrameContents (BM_BufferPool *const bm) {
 
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+
+	// Get number of pages to iterate
+	int numPages = bm->numPages;
+
+	PageNumber *frameContents = (PageNumber *) malloc(numPages * sizeof(PageNumber));
+
+	for (int i = 0; i < numPages; i++){
+		frameContents[i] = bufferPool[i].pageNumber;
+	}
+
+	return frameContents;
 }
 
 bool *getDirtyFlags (BM_BufferPool *const bm) {
@@ -251,9 +270,11 @@ int *getFixCounts (BM_BufferPool *const bm) {
 }
 
 int getNumReadIO (BM_BufferPool *const bm) {
-
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	return buffPoolInfo->readNumber;
 }
 
 int getNumWriteIO (BM_BufferPool *const bm) {
-
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	return buffPoolInfo->writeNumber;
 }
