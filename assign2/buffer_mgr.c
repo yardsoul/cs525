@@ -50,6 +50,7 @@ typedef struct BufferPoolInfo
  *     Buffer Manager Interface Pool Handling               *
  ************************************************************/
 
+//Written 2016/02/18
 RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
                   const int numPages, ReplacementStrategy strategy,
                   void *stratData) {
@@ -112,6 +113,7 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 	return RC_OK;
 }
 
+//Written 2016/02/18
 RC shutdownBufferPool(BM_BufferPool *const bm) {
 	// Get number of pages to iterate
 	int numPages = bm->numPages;
@@ -147,6 +149,8 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 	return RC_OK;
 }
 
+//Written 2016/02/18
+//Edited 2016/02/19
 RC forceFlushPool(BM_BufferPool *const bm) {
 	// Get number of pages to iterate
 	int numPages = bm->numPages;
@@ -212,6 +216,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
  *                   Statistics Interface                   *
  ************************************************************/
 
+//Written 2016/02/19
 PageNumber *getFrameContents (BM_BufferPool *const bm) {
 
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -229,6 +234,7 @@ PageNumber *getFrameContents (BM_BufferPool *const bm) {
 	return frameContents;
 }
 
+//Written 2016/02/18
 bool *getDirtyFlags (BM_BufferPool *const bm) {
 	// TODO: Iterate through bufferPool array and copy the values (TRUE/FALSE)
 
@@ -250,6 +256,7 @@ bool *getDirtyFlags (BM_BufferPool *const bm) {
 
 }
 
+//Written 2016/02/18
 int *getFixCounts (BM_BufferPool *const bm) {
 	// TODO: Iterate through bufferPool array and copy the values (int)
 
@@ -269,11 +276,13 @@ int *getFixCounts (BM_BufferPool *const bm) {
 
 }
 
+//Written 2016/02/19
 int getNumReadIO (BM_BufferPool *const bm) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	return buffPoolInfo->readNumber;
 }
 
+//Written 2016/02/19
 int getNumWriteIO (BM_BufferPool *const bm) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	return buffPoolInfo->writeNumber;
