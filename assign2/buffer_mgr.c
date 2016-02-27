@@ -209,11 +209,24 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 			bufferPool[page->pageNum]->isDirty = true;
 			return RC_OK;
 	}
+	// Page not found
 	return RC_WRITE_FAILED;
 }
 
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
-
+	
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+	
+	// Get number of pages on buffer pool
+	int numPages = bm->numPages;
+	if(numPages <= page->pageNum)
+	{
+		bufferPool[page->pageNum]->fixCount--;
+		return RC_OK;
+	}
+	// Page not found
+	return RC_WRITE_FAILED;
 }
 
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
