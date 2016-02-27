@@ -223,8 +223,18 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 }
 
+//Written 2016/02/27
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
             const PageNumber pageNum) {
+	//pins page with page number pageNum
+	PageNumber pageNum = frame->pageNumber;
+	//pageNumber = page -> pageNum; 
+	
+	//data field points to page frame (numPages)
+	int numPages = bm -> numPages;
+	*data = numPages; 
+
+	//increase fixed count by 1
 
 }
 
