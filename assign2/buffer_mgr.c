@@ -195,8 +195,24 @@ RC forceFlushPool(BM_BufferPool *const bm) {
  *     Buffer Manager Interface Access Pages                *
  ************************************************************/
 
+//Written 2016/02/26 Pat
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
-
+	
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+	
+	// Get number of pages to iterate
+	int numPages = bm->numPages;
+	for (int i = 0; i < numPages; i++) {
+		// Iterate until found page
+		if (bufferPool[i]->pageNumber == page->pageNum) {
+			// Mark as dirty
+			bufferPool[i]->isDirty = true;
+			// Not need to keep checking
+			return RC_OK;
+		}
+	}
+	return RC_WRITE_FAILED;
 }
 
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
