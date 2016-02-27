@@ -201,16 +201,13 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
 	
-	// Get number of pages to iterate
+	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	for (int i = 0; i < numPages; i++) {
-		// Iterate until found page
-		if (bufferPool[i]->pageNumber == page->pageNum) {
+	
+	if(numPages <= page->pageNum)
 			// Mark as dirty
-			bufferPool[i]->isDirty = true;
-			// Not need to keep checking
+			bufferPool[page->pageNum]->isDirty = true;
 			return RC_OK;
-		}
 	}
 	return RC_WRITE_FAILED;
 }
