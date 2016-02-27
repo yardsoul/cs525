@@ -37,7 +37,38 @@ typedef struct BufferPoolInfo
  ************************************************************/
 
 // FIFO
-
+//2016-02-27 Pat
+RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
+{
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	if(buffPoolInfo->firstFrame->nextFrame!=NULL)
+	{
+		//If dirty write it down to disk
+		if(buffPoolInfo->firstFrame->isDirty)
+		{
+			RC writeDirty = forcePage(bm,buffPoolInfo->firstFrame->pageNumber);
+			if(writeDirty != RC_OK)
+			{
+				return RC_WRITE_FAILED;
+			}
+		}
+		//Pop first page
+		buffPoolInfo->firstFrame = &buffPoolInfo->firstFrame->nextFrame;
+		buffPoolInfo->firstFrame->previousFrame = NULL;
+		
+		//Read page to memory
+		RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->nextFrame->frameData);
+		if(readToMem != RC_OK)
+		{
+			return RC_READ_NON_EXISTING_PAGE;
+		}
+		buffPoolInfo->readNumber++;
+		buffPoolInfo->lastFrame = &buffPoolInfo->lastFrame->nextFrame;
+		buffPoolInfo->lastFrame->pageNumber = pageNum;
+		page->data = buffPoolInfo->lastFrame->frameData
+		return RC_OK;
+	}
+}
 // LRU
 
 // CLOCK (Extra)
