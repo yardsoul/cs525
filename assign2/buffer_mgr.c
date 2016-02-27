@@ -213,6 +213,7 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	return RC_WRITE_FAILED;
 }
 
+//Written 2016/02/27 Pat
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -229,8 +230,23 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	return RC_WRITE_FAILED;
 }
 
+//Written 2016/02/27 Pat
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
-
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	
+	//If buffer pool exists
+	if(buffPoolInfo!=NULL)
+	{
+		//Write back to disk
+		writeBlock(page->pageNum,buffPoolInfo,page->data);
+		//Increase write time
+		buffPoolInfo->writeNumber++;
+		return RC_OK;
+	}
+	else
+	{
+		return RC_FILE_NOT_FOUND;
+	}
 }
 
 //Written 2016/02/27
