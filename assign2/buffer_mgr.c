@@ -227,6 +227,7 @@ RC forceFlushPool(BM_BufferPool *const bm) {
  ************************************************************/
 
 //Written 2016/02/26 Pat
+//Edited  2016/02/28
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -235,7 +236,7 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
 	
-	if(numPages <= page->pageNum)
+	if(numPages >= page->pageNum)
 			// Mark as dirty
 			bufferPool[page->pageNum]->isDirty = true;
 			return RC_OK;
