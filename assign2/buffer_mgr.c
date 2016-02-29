@@ -70,7 +70,177 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 	}
 }
 // LRU
+typedef struct Node
+{
+    //pointer for Doubly linked List
+    struct Node *prev;
+    //pointer for Doubly Linked list
+    struct Node *next;
+    //the frame number stored in this QNode
+    int frameNumber
+}
 
+typedef struct struct Queue
+{
+    //count the number of filled frames
+    int count;
+    //total number of frames
+    int numberFrames;
+    //first node in Doubly Linked List
+    Node *head;
+    //last node in Doubly Linked List
+    Node *tail;
+}
+
+typedef struct Hash
+{
+    //number of frames that can be stored
+    int capacity
+    //an array of nodes
+    Node* *array
+}
+
+Node* createNode(int frameNumber)
+{
+    //allocate memory 
+    Node* temp = (Node *)malloc( sizeof(Node));
+    //assign the given frameNumner to the temp Node
+    temp -> frameNumber = frameNumber;
+    //initialize prev and next pointer as NULL
+    temp->prev= temp->next=NULL;
+    return temp;
+}
+
+Queue* createQueue( int numberFrames)
+{
+    //allocate memory
+    Queue* queue = (Queue *)malloc(sizeof(Queue));
+    //set the count to 0
+    queue->count = 0;
+    //assign the head and tail as NULL
+    queue-> head = queue->tail= NULL;
+    
+    //number of frames that can be stored
+    queue->numberFrames = numberFrames;
+}
+
+Hash* createHash(int capacity)
+{
+    //allocate memory
+    Hash* hash =(Hash *)malloc(sizeof(Hash));
+    //assign the capacity
+    hash-> capacity = capacity;
+    //create an array of index
+    hash-> array =(Node**)malloc(hash->capacity * sizeof(Node));
+    int i;
+    //initialize all entries of the hash to NULL
+    for(i =0; i <hash->capacity;++i)
+    hash->array[i]=NULL;
+    
+    return hash;
+}
+
+//check if there is slot available
+int isFull(Queue* queue)
+{
+    return queue-> count== queue->numberFrames;
+}
+
+//check if queue is empty
+int isEmpty(Queue* queue)
+{
+    return queue->tail == NULL;
+}
+
+//delete frame from queue
+void dequeue(Queue* queue)
+{
+    if(isEmpty(queue))
+        return;
+    
+    //if there is only one node in the list, then change head to NULL
+    if(queue->head == queue->tail)
+        queue->head = NULL;
+    
+    //change tail and remove the previous tail    
+    Node* temp = queue->tail;
+    queue-> tail = queue->head->prev;
+    
+    if(queue)
+        queue->tail->next = NULL;
+    
+    free(temp);
+    
+    //decrement the number of full frames by 1
+    queue->count--;
+}
+
+void enqueue(Queue* queue, Hash* hash, int pageNumber)
+{
+    //if full, then remove the frame as the tail
+    if(isFull(queue))
+    {
+        //remive page from hash
+        hash->array[queue->tail->pageNumber]=NULL;
+        dequeue(queue);
+    }
+    
+    //create a new node with given pageNumber
+    Node* temp = createNode(pageNumber);
+    //add the new node to the front of queue
+    temp->next = queue->head;
+    
+    //if queue is empty, change both head and tail pointers
+    if(isEmpty(Queue))
+    queue->tail= queue->front= temp;
+    //else change only the head pointer
+    else
+    {
+        queue->head->prev=temp;
+        queue->head=temp;
+    }
+    
+    //add page entry to hash
+    hash->array[pageNumber]= temp;
+    //increment number of full frames
+    queue->count++;
+}
+
+void LRU(Queue* queue, Hash*hash, int pageNumber)
+{
+    //see if the requesting pageNumber is in the memory
+    Node* reqPage = hash-> array[pageNumber];
+    
+    //if the page is not in the memory, bring it in to to memory
+    if(reqPage == NULL)
+        enqueue(queue, hash, pageNumber);
+    
+    //page is there and not at the head, change pointer
+    else if(reqPage  != queue->head)
+    {
+        //unlink requested page from its current location in queue
+        reqPage-> prev-> next= reqPage->next;
+        if(reqPage->next)
+            reqPage->prev= reqPage->prev;
+        
+        //if the requested page is at tail, then move it to the head
+        if(reqPage == queue->tail)
+        {
+            queue->tail = reqPage->prev;
+            queue->tail->next=NULL;
+        }
+        
+        //put the requested page before current head
+        reqPage->next= queue->front;
+        reqPage->prev =NULL;
+        
+        //change prev of current head
+        reqPage-> prev = reqPage;
+        
+        //change head to the requested page
+        queue->head=reqPage;
+    }
+}
 // CLOCK (Extra)
 
 // LFU (Extra)
