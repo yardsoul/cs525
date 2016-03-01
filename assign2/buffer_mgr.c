@@ -51,9 +51,32 @@ typedef struct BufferPoolInfo
  ************************************************************/
 
 // FIFO
-//Written 2016-02-27 Pat
-//Edited 2016-02-29
-//Edited 2016-03-01
+/*******************************************************************
+* NAME :            RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
+*
+* DESCRIPTION :     Store block in to memory using FIFO strategy
+*
+* PARAMETERS:
+*            BM_BufferPool *const bm        	Stores specific information about a buffer pool
+*			 BM_PageHandle *const page 		Page information
+*			 PageNumber pageNum) 				Page wanted to be store
+*
+* RETURN :
+*            Type:   RC                     		Returned code:
+*            Values: RC_OK                  		block stored successfully
+* 					  RC_READ_NON_EXISTING_PAGE	Cannot find page
+*
+* AUTHOR :
+*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 		DETAIL
+*            -----------    ---------------------------------------  		---------------------------------
+*            2016-02-27    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-29    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Correction
+*            2016-02-29    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added header comment and correction
+*
+*******************************************************************/
 RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -88,6 +111,7 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 		buffPoolInfo->lastFrame = buffPoolInfo->lastFrame->nextFrame;
 		buffPoolInfo->lastFrame->pageNumber = pageNum;
 		page->data = buffPoolInfo->lastFrame->frameData;
+		page->pageNum = pageNum;
 		return RC_OK;
 	}
 	return RC_READ_NON_EXISTING_PAGE;
@@ -483,8 +507,31 @@ RC forceFlushPool(BM_BufferPool *const bm) {
  *     Buffer Manager Interface Access Pages                *
  ************************************************************/
 
-//Written 2016/02/26 Pat
-//Edited  2016/02/28
+/*******************************************************************
+* NAME :           RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) 
+*
+* DESCRIPTION :     Mark page as dirty
+*
+* PARAMETERS:
+*            BM_BufferPool *const bm        	Stores specific information about a buffer pool
+*			 BM_PageHandle *const page 		Page information
+*
+* RETURN :
+*            Type:   RC                     		Returned code:
+*            Values: RC_OK                  		block stored successfully
+* 					  RC_WRITE_FAILED				Write dirty failed
+*
+* AUTHOR :
+*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 		DETAIL
+*            -----------    ---------------------------------------  		---------------------------------
+*            2016-02-26    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-28    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Correction
+*            2016-02-29    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added header comment
+*
+*******************************************************************/
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -502,8 +549,30 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	return RC_WRITE_FAILED;
 }
 
-//Written 2016/02/27 Pat
-//Edited  2016/02/29
+/*******************************************************************
+* NAME :           RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) 
+*
+* DESCRIPTION :     Unpin page in memory
+*
+* PARAMETERS:
+*            BM_BufferPool *const bm        	Stores specific information about a buffer pool
+*			 BM_PageHandle *const page 		Page information
+*
+* RETURN :
+*            Type:   RC                     		Returned code:
+*            Values: RC_OK                  		block stored successfully
+* 					  RC_WRITE_FAILED				Write dirty failed
+*
+* AUTHOR :
+*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 		DETAIL
+*            -----------    ---------------------------------------  		---------------------------------
+*            2016-02-26    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-03-01    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added header comment and correction
+*
+*******************************************************************/
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -524,9 +593,31 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	return RC_WRITE_FAILED;
 }
 
-//Written 2016/02/27 Pat
-//Edited  2016/02/29
-//Edited  2016/03/01
+/*******************************************************************
+* NAME :           forcePage (BM_BufferPool *const bm, BM_PageHandle *const page)
+*
+* DESCRIPTION :     force page from memory
+*
+* PARAMETERS:
+*            BM_BufferPool *const bm        	Stores specific information about a buffer pool
+*			 BM_PageHandle *const page 		Page information
+*
+* RETURN :
+*            Type:   RC                     		Returned code:
+*            Values: RC_OK                  		block stored successfully
+* 					  RC_FILE_NOT_FOUND			Cannot find file
+*
+* AUTHOR :
+*			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 		DETAIL
+*            -----------    ---------------------------------------  		---------------------------------
+*            2016-02-26    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-29    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Correction
+*            2016-03-01    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added header comment and correction
+*
+*******************************************************************/
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	
