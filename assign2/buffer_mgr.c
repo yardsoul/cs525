@@ -74,7 +74,7 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 			buffPoolInfo->writeNumber++;
 		}
 		//Pop first page
-		buffPoolInfo->firstFrame = &buffPoolInfo->firstFrame->nextFrame;
+		buffPoolInfo->firstFrame = buffPoolInfo->firstFrame->nextFrame;
 		buffPoolInfo->firstFrame->previousFrame = NULL;
 		
 		//Read page to memory
@@ -84,8 +84,8 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 		buffPoolInfo->readNumber++;
-		buffPoolInfo->lastFrame->nextFrame->previousFrame = &buffPoolInfo->lastFrame;
-		buffPoolInfo->lastFrame = &buffPoolInfo->lastFrame->nextFrame;
+		buffPoolInfo->lastFrame->nextFrame->previousFrame = buffPoolInfo->lastFrame;
+		buffPoolInfo->lastFrame = buffPoolInfo->lastFrame->nextFrame;
 		buffPoolInfo->lastFrame->pageNumber = pageNum;
 		page->data = buffPoolInfo->lastFrame->frameData;
 		return RC_OK;
