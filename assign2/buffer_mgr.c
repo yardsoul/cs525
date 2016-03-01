@@ -30,6 +30,8 @@ typedef struct BufferPoolInfo
 	int readNumber;
 	// Number of pages written
 	int writeNumber;
+	//number of filled frames
+	int count;
 } BufferPoolInfo;
 
 /************************************************************
@@ -70,68 +72,46 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 	}
 }
 // LRU
-typedef struct Node
-{
-    //pointer for Doubly linked List
-    struct Node *prev;
-    //pointer for Doubly Linked list
-    struct Node *next;
-    //the frame number stored in this QNode
-    int frameNumber
-}
-
-typedef struct struct Queue
-{
-    //count the number of filled frames
-    int count;
-    //total number of frames
-    int numberFrames;
-    //first node in Doubly Linked List
-    Node *head;
-    //last node in Doubly Linked List
-    Node *tail;
-}
-
 typedef struct Hash
 {
     //number of frames that can be stored
     int capacity
     //an array of nodes
-    Node* *array
+    FrameInfo* *array
 }
 
-Node* createNode(int frameNumber)
+FrameInfo* createNode(const int frameNumber)
 {
     //allocate memory 
-    Node* temp = (Node *)malloc( sizeof(Node));
+    FrameInfo* temp = (FrameInfo *)malloc( sizeof(FrameInfo));
     //assign the given frameNumner to the temp Node
     temp -> frameNumber = frameNumber;
     //initialize prev and next pointer as NULL
-    temp->prev= temp->next=NULL;
+    temp->previousFrame= temp->nextFrame=NULL;
     return temp;
 }
 
-Queue* createQueue( int numberFrames)
+BufferPoolInfo* createQueue( int numPages)
 {
     //allocate memory
-    Queue* queue = (Queue *)malloc(sizeof(Queue));
+    BufferPoolInfo* bufferPool = (BufferPoolInfo *)malloc(sizeof(BufferPoolInfo));
     //set the count to 0
-    queue->count = 0;
+    bufferPool->count = 0;
     //assign the head and tail as NULL
-    queue-> head = queue->tail= NULL;
+    bufferPool-> firstFrame = bufferPool->lastFrame= NULL;
     
     //number of frames that can be stored
-    queue->numberFrames = numberFrames;
+    bufferPool->numPages = numPages;
 }
 
-Hash* createHash(int capacity)
+Hash* createHash(PageNumber pageNumber)
 {
     //allocate memory
     Hash* hash =(Hash *)malloc(sizeof(Hash));
     //assign the capacity
-    hash-> capacity = capacity;
+    hash-> capacity = pageNumber;
     //create an array of index
-    hash-> array =(Node**)malloc(hash->capacity * sizeof(Node));
+    hash-> array =(FrameInfo**)malloc(hash->capacity * sizeof(Node));
     int i;
     //initialize all entries of the hash to NULL
     for(i =0; i <hash->capacity;++i)
@@ -141,104 +121,112 @@ Hash* createHash(int capacity)
 }
 
 //check if there is slot available
-int isFull(Queue* queue)
+int isFull(BufferPoolInfo* bufferPool)
 {
-    return queue-> count== queue->numberFrames;
+    return bufferPool-> count == bufferPool->frameNumber;
 }
 
 //check if queue is empty
-int isEmpty(Queue* queue)
+int isEmpty(BufferPoolInfo* bufferPool)
 {
-    return queue->tail == NULL;
+    return bufferPool->lastFrame == NULL;
 }
 
 //delete frame from queue
-void dequeue(Queue* queue)
+void dequeue(BufferPoolInfo* bufferPool)
 {
-    if(isEmpty(queue))
+    if(isEmpty(bufferPool))
         return;
     
     //if there is only one node in the list, then change head to NULL
-    if(queue->head == queue->tail)
-        queue->head = NULL;
+    if(bufferPool->firstFrame == bufferPool->lastFrame)
+        bufferPool->firstFrame = NULL;
     
     //change tail and remove the previous tail    
-    Node* temp = queue->tail;
-    queue-> tail = queue->head->prev;
+    FrameInfo* temp = bufferPool->lastFrame;
+    bufferPool-> lastFrame = bufferPool->firstFrame->previousFrame;
     
-    if(queue)
-        queue->tail->next = NULL;
+    if(bufferPool->lastFrame)
+        bufferPool->lastFrame->nextFrame = NULL;
     
     free(temp);
     
     //decrement the number of full frames by 1
-    queue->count--;
+    bufferPool->count--;
 }
 
-void enqueue(Queue* queue, Hash* hash, int pageNumber)
+void enqueue(BufferPoolInfo* bufferPool, Hash* hash, PageNumber pageNumber)
 {
-    //if full, then remove the frame as the tail
-    if(isFull(queue))
+    //if full, then remove the frame as the lastFrame
+    if(isFull(bufferPool))
     {
         //remive page from hash
-        hash->array[queue->tail->pageNumber]=NULL;
-        dequeue(queue);
+        hash->array[bufferPool->lastFrame->pageNumber]=NULL;
+        dequeue(bufferPool);
     }
     
     //create a new node with given pageNumber
-    Node* temp = createNode(pageNumber);
+    FrameInfo* temp = createNode(pageNumber);
     //add the new node to the front of queue
-    temp->next = queue->head;
+    temp->nextFrame = bufferPool->firstFrame;
     
-    //if queue is empty, change both head and tail pointers
-    if(isEmpty(Queue))
-    queue->tail= queue->front= temp;
+    //if queue is empty, change both head and firstFrame pointers
+    if(isEmpty(BufferPoolInfo))
+    bufferPool->lastFrame= bufferPool->firstFrame= temp;
     //else change only the head pointer
     else
     {
-        queue->head->prev=temp;
-        queue->head=temp;
+        bufferPool->firstFrame->previousFrame=temp;
+        bufferPool->firstFrame=temp;
     }
     
     //add page entry to hash
     hash->array[pageNumber]= temp;
     //increment number of full frames
-    queue->count++;
+    bufferPool->count++;
 }
 
-void LRU(Queue* queue, Hash*hash, int pageNumber)
+RC LRU(BM_BufferPool *const bm, BM_PageHandle *const page, Hash*hash, PageNumber pageNumber)
 {
+    
+    BufferPoolInfo *buffPoolInfo = bm->mgmtData;
     //see if the requesting pageNumber is in the memory
-    Node* reqPage = hash-> array[pageNumber];
+    FrameInfo* reqPage = hash-> array[pageNumber];
     
     //if the page is not in the memory, bring it in to to memory
     if(reqPage == NULL)
-        enqueue(queue, hash, pageNumber);
-    
+    {
+        RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->frameData);
+		if(readToMem != RC_OK)
+		{
+			return RC_READ_NON_EXISTING_PAGE;
+		}
+        enqueue(buffPoolInfo, hash, pageNumber);
+    }
     //page is there and not at the head, change pointer
-    else if(reqPage  != queue->head)
+    else if(reqPage  != buffPoolInfo->firstFrame)
     {
         //unlink requested page from its current location in queue
-        reqPage-> prev-> next= reqPage->next;
-        if(reqPage->next)
-            reqPage->prev= reqPage->prev;
+        reqPage-> previousFrame-> nextFrame= reqPage->nextFrame;
+        if(reqPage->nextFrame)
+            reqPage->previousFrame= reqPage->previousFrame;
         
         //if the requested page is at tail, then move it to the head
-        if(reqPage == queue->tail)
+        if(reqPage == buffPoolInfo->lastFrame)
         {
-            queue->tail = reqPage->prev;
-            queue->tail->next=NULL;
+            bufferPoolInfo->lastFrame = reqPage->previousFrame;
+            bufferPoolInfo->lastFrame->nextFrame=NULL;
         }
         
         //put the requested page before current head
-        reqPage->next= queue->front;
-        reqPage->prev =NULL;
+        reqPage->nextFrame= buffPoolInfo->firstFrame;
+        reqPage->previousFrame =NULL;
         
         //change prev of current head
-        reqPage-> prev = reqPage;
+        reqPage-> previousFrame = reqPage;
         
         //change head to the requested page
-        queue->head=reqPage;
+        buffPoolFrame->firstFrame=reqPage;
     }
 }
 // CLOCK (Extra)
