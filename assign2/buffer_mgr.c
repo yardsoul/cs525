@@ -39,7 +39,8 @@ typedef struct BufferPoolInfo
  ************************************************************/
 
 // FIFO
-//2016-02-27 Pat
+//Written 2016-02-27 Pat
+//Edited 2016-02-29
 RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -65,6 +66,7 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 		buffPoolInfo->readNumber++;
+		buffPoolInfo->lastFrame->nextFrame->previousFrame = &bufferPoolInfo->lastFrame;
 		buffPoolInfo->lastFrame = &buffPoolInfo->lastFrame->nextFrame;
 		buffPoolInfo->lastFrame->pageNumber = pageNum;
 		page->data = buffPoolInfo->lastFrame->frameData
