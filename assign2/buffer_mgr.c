@@ -42,6 +42,8 @@ typedef struct BufferPoolInfo
 	int readNumber;
 	// Number of pages written
 	int writeNumber;
+	//number of filled frames
+	int count;
 } BufferPoolInfo;
 
 /************************************************************
@@ -49,9 +51,195 @@ typedef struct BufferPoolInfo
  ************************************************************/
 
 // FIFO
-
+//Written 2016-02-27 Pat
+//Edited 2016-02-29
+RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
+{
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	if(buffPoolInfo->firstFrame->nextFrame!=NULL)
+	{
+		//If dirty write it down to disk
+		if(buffPoolInfo->firstFrame->isDirty)
+		{
+			writeVal = writeBlock(page->pageNum, buffPoolInfo, buffPoolInfo->firstFrame->frameData);
+			buffPoolInfo->writeNumber++;
+		}
+		//Pop first page
+		buffPoolInfo->firstFrame = &buffPoolInfo->firstFrame->nextFrame;
+		buffPoolInfo->firstFrame->previousFrame = NULL;
+		
+		//Read page to memory
+		RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->nextFrame->frameData);
+		if(readToMem != RC_OK)
+		{
+			return RC_READ_NON_EXISTING_PAGE;
+		}
+		buffPoolInfo->readNumber++;
+		buffPoolInfo->lastFrame->nextFrame->previousFrame = &buffPoolInfo->lastFrame;
+		buffPoolInfo->lastFrame = &buffPoolInfo->lastFrame->nextFrame;
+		buffPoolInfo->lastFrame->pageNumber = pageNum;
+		page->data = buffPoolInfo->lastFrame->frameData;
+		return RC_OK;
+	}
+}
 // LRU
+typedef struct Hash
+{
+    //number of frames that can be stored
+    int capacity
+    //an array of nodes
+    FrameInfo* *array
+}
 
+FrameInfo* createNode(const int frameNumber)
+{
+    //allocate memory 
+    FrameInfo* temp = (FrameInfo *)malloc( sizeof(FrameInfo));
+    //assign the given frameNumner to the temp Node
+    temp -> frameNumber = frameNumber;
+    //initialize prev and next pointer as NULL
+    temp->previousFrame= temp->nextFrame=NULL;
+    return temp;
+}
+
+BufferPoolInfo* createQueue( int numPages)
+{
+    //allocate memory
+    BufferPoolInfo* bufferPool = (BufferPoolInfo *)malloc(sizeof(BufferPoolInfo));
+    //set the count to 0
+    bufferPool->count = 0;
+    //assign the head and tail as NULL
+    bufferPool-> firstFrame = bufferPool->lastFrame= NULL;
+    
+    //number of frames that can be stored
+    bufferPool->numPages = numPages;
+}
+
+Hash* createHash(PageNumber pageNumber)
+{
+    //allocate memory
+    Hash* hash =(Hash *)malloc(sizeof(Hash));
+    //assign the capacity
+    hash-> capacity = pageNumber;
+    //create an array of index
+    hash-> array =(FrameInfo**)malloc(hash->capacity * sizeof(Node));
+    int i;
+    //initialize all entries of the hash to NULL
+    for(i =0; i <hash->capacity;++i)
+    hash->array[i]=NULL;
+    
+    return hash;
+}
+
+//check if there is slot available
+int isFull(BufferPoolInfo* bufferPool)
+{
+    return bufferPool-> count == bufferPool->frameNumber;
+}
+
+//check if queue is empty
+int isEmpty(BufferPoolInfo* bufferPool)
+{
+    return bufferPool->lastFrame == NULL;
+}
+
+//delete frame from queue
+void dequeue(BufferPoolInfo* bufferPool)
+{
+    if(isEmpty(bufferPool))
+        return;
+    
+    //if there is only one node in the list, then change head to NULL
+    if(bufferPool->firstFrame == bufferPool->lastFrame)
+        bufferPool->firstFrame = NULL;
+    
+    //change tail and remove the previous tail    
+    FrameInfo* temp = bufferPool->lastFrame;
+    bufferPool-> lastFrame = bufferPool->firstFrame->previousFrame;
+    
+    if(bufferPool->lastFrame)
+        bufferPool->lastFrame->nextFrame = NULL;
+    
+    free(temp);
+    
+    //decrement the number of full frames by 1
+    bufferPool->count--;
+}
+
+void enqueue(BufferPoolInfo* bufferPool, Hash* hash, PageNumber pageNumber)
+{
+    //if full, then remove the frame as the lastFrame
+    if(isFull(bufferPool))
+    {
+        //remive page from hash
+        hash->array[bufferPool->lastFrame->pageNumber]=NULL;
+        dequeue(bufferPool);
+    }
+    
+    //create a new node with given pageNumber
+    FrameInfo* temp = createNode(pageNumber);
+    //add the new node to the front of queue
+    temp->nextFrame = bufferPool->firstFrame;
+    
+    //if queue is empty, change both head and firstFrame pointers
+    if(isEmpty(BufferPoolInfo))
+    bufferPool->lastFrame= bufferPool->firstFrame= temp;
+    //else change only the head pointer
+    else
+    {
+        bufferPool->firstFrame->previousFrame=temp;
+        bufferPool->firstFrame=temp;
+    }
+    
+    //add page entry to hash
+    hash->array[pageNumber]= temp;
+    //increment number of full frames
+    bufferPool->count++;
+}
+
+RC LRU(BM_BufferPool *const bm, BM_PageHandle *const page, Hash*hash, PageNumber pageNumber)
+{
+    
+    BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+    //see if the requesting pageNumber is in the memory
+    FrameInfo* reqPage = hash-> array[pageNumber];
+    
+    //if the page is not in the memory, bring it in to to memory
+    if(reqPage == NULL)
+    {
+        RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->frameData);
+		if(readToMem != RC_OK)
+		{
+			return RC_READ_NON_EXISTING_PAGE;
+		}
+        enqueue(buffPoolInfo, hash, pageNumber);
+    }
+    //page is there and not at the head, change pointer
+    else if(reqPage  != buffPoolInfo->firstFrame)
+    {
+        //unlink requested page from its current location in queue
+        reqPage-> previousFrame-> nextFrame= reqPage->nextFrame;
+        if(reqPage->nextFrame)
+            reqPage->previousFrame= reqPage->previousFrame;
+        
+        //if the requested page is at tail, then move it to the head
+        if(reqPage == buffPoolInfo->lastFrame)
+        {
+            bufferPoolInfo->lastFrame = reqPage->previousFrame;
+            bufferPoolInfo->lastFrame->nextFrame=NULL;
+        }
+        
+        //put the requested page before current head
+        reqPage->nextFrame= buffPoolInfo->firstFrame;
+        reqPage->previousFrame =NULL;
+        
+        //change prev of current head
+        reqPage-> previousFrame = reqPage;
+        
+        //change head to the requested page
+        buffPoolFrame->firstFrame=reqPage;
+    }
+}
 // CLOCK (Extra)
 
 // LFU (Extra)
@@ -285,20 +473,100 @@ RC forceFlushPool(BM_BufferPool *const bm) {
  *     Buffer Manager Interface Access Pages                *
  ************************************************************/
 
+//Written 2016/02/26 Pat
+//Edited  2016/02/28
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
-
+	
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+	
+	// Get number of pages on buffer pool
+	int numPages = bm->numPages;
+	
+	if(numPages >= page->pageNum)
+			// Mark as dirty
+			bufferPool[page->pageNum]->isDirty = true;
+			return RC_OK;
+	}
+	// Page not found
+	return RC_WRITE_FAILED;
 }
 
+//Written 2016/02/27 Pat
+//Edited  2016/02/29
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
-
+	
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+	
+	// Get number of pages on buffer pool
+	int numPages = bm->numPages;
+	if(numPages >= page->pageNum)
+	{
+		if(bufferPool[page->pageNum]->isDirty)
+		{
+			forcePage(bm,page);
+		}
+		bufferPool[page->pageNum]->fixCount--;
+		return RC_OK;
+	}
+	// Page not found
+	return RC_WRITE_FAILED;
 }
 
+//Written 2016/02/27 Pat
+//Edited  2016/02/29
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
-
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	
+	//If buffer pool exists
+	if(buffPoolInfo!=NULL)
+	{
+		//Write back to disk
+		writeBlock(page->pageNum,buffPoolInfo,page->data);
+		//Increase write time
+		buffPoolInfo->writeNumber++;
+		//Clear Dirty Flag
+		buffPoolInfo->bufferPool[page->pageNum]->isDirty = false;
+		return RC_OK;
+	}
+	else
+	{
+		return RC_FILE_NOT_FOUND;
+	}
 }
 
+//Written 2016/02/27
+//Edited 2016/02/29
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
             const PageNumber pageNum) {
+	
+
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+	
+	// Get number of pages on buffer pool
+	int numPages = bm->numPages;
+	
+	//pins pageNum page
+	if(numPages = page->pageNum)
+	{
+		bufferPool[page->pageNum]->fixCount++;
+		return RC_OK;
+	}
+	/*else
+	{
+		//read page using replacement strategy
+		//TODO: add other strategy
+		doFifo(bm,buffPoolInfo->firstFrame->pageNumber,page->pageNum);
+		bufferPool[page->pageNum]->fixCount++;
+	}
+	*/
+	//data field points to page frame
+	//data->numPages;
+
+	return RC_WRITE_FAILED;
+}
 
 }
 
