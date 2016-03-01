@@ -53,6 +53,7 @@ typedef struct BufferPoolInfo
 // FIFO
 //Written 2016-02-27 Pat
 //Edited 2016-02-29
+//Edited 2016-03-01
 RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -61,7 +62,15 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 		//If dirty write it down to disk
 		if(buffPoolInfo->firstFrame->isDirty)
 		{
-			writeVal = writeBlock(page->pageNum, buffPoolInfo, buffPoolInfo->firstFrame->frameData);
+			SM_FileHandle fileHandle;
+			char *fileName = bm->pageFile;
+			
+			// Open file
+			openPageFile(fileName, &fileHandle);
+			// Write page to disk
+			writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, buffPoolInfo->firstFrame->frameData);
+			// Close page file
+			closePageFile(&fileHandle);
 			buffPoolInfo->writeNumber++;
 		}
 		//Pop first page
@@ -81,6 +90,7 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 		page->data = buffPoolInfo->lastFrame->frameData;
 		return RC_OK;
 	}
+	return RC_READ_NON_EXISTING_PAGE;
 }
 // LRU
 typedef struct Hash
@@ -516,14 +526,24 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 //Written 2016/02/27 Pat
 //Edited  2016/02/29
+//Edited  2016/03/01
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	
 	//If buffer pool exists
 	if(buffPoolInfo!=NULL)
 	{
+		SM_FileHandle fileHandle;
+		char *fileName = bm->pageFile;
+		
+		// Open file
+		openPageFile(fileName, &fileHandle);
+		// Write page to disk
+		writeBlock(page->pageNum, &fileHandle, page->data);
+		// Close page file
+		closePageFile(&fileHandle);
 		//Write back to disk
-		writeBlock(page->pageNum,buffPoolInfo,page->data);
+		//writeBlock(page->pageNum,buffPoolInfo,page->data);
 		//Increase write time
 		buffPoolInfo->writeNumber++;
 		//Clear Dirty Flag
