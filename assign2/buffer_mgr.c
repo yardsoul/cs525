@@ -440,6 +440,7 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 }
 
 //Written 2016/02/27
+//Edited 2016/02/29
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
             const PageNumber pageNum) {
 	
@@ -450,23 +451,24 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
 	
+	//pins pageNum page
 	if(numPages = page->pageNum)
 	{
 		bufferPool[page->pageNum]->fixCount++;
-		
+		return RC_OK;
 	}
-	else
+	/*else
 	{
 		//read page using replacement strategy
 		//TODO: add other strategy
 		doFifo(bm,buffPoolInfo->firstFrame->pageNumber,page->pageNum);
 		bufferPool[page->pageNum]->fixCount++;
 	}
-	
+	*/
 	//data field points to page frame
 	//data->numPages;
 
-	return RC_OK;
+	return RC_WRITE_FAILED;
 }
 
 }
