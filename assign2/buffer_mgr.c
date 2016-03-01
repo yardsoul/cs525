@@ -49,11 +49,8 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 		//If dirty write it down to disk
 		if(buffPoolInfo->firstFrame->isDirty)
 		{
-			RC writeDirty = forcePage(bm,buffPoolInfo->firstFrame->pageNumber);
-			if(writeDirty != RC_OK)
-			{
-				return RC_WRITE_FAILED;
-			}
+			writeVal = writeBlock(page->pageNum, buffPoolInfo, buffPoolInfo->firstFrame->frameData);
+			buffPoolInfo->writeNumber++;
 		}
 		//Pop first page
 		buffPoolInfo->firstFrame = &buffPoolInfo->firstFrame->nextFrame;
@@ -66,10 +63,10 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 		buffPoolInfo->readNumber++;
-		buffPoolInfo->lastFrame->nextFrame->previousFrame = &bufferPoolInfo->lastFrame;
+		buffPoolInfo->lastFrame->nextFrame->previousFrame = &buffPoolInfo->lastFrame;
 		buffPoolInfo->lastFrame = &buffPoolInfo->lastFrame->nextFrame;
 		buffPoolInfo->lastFrame->pageNumber = pageNum;
-		page->data = buffPoolInfo->lastFrame->frameData
+		page->data = buffPoolInfo->lastFrame->frameData;
 		return RC_OK;
 	}
 }
@@ -406,6 +403,7 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 }
 
 //Written 2016/02/27 Pat
+//Edited  2016/02/29
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
@@ -413,8 +411,12 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	if(numPages <= page->pageNum)
+	if(numPages >= page->pageNum)
 	{
+		if(bufferPool[page->pageNum]->isDirty)
+		{
+			forcePage(bm,page);
+		}
 		bufferPool[page->pageNum]->fixCount--;
 		return RC_OK;
 	}
@@ -423,6 +425,7 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 }
 
 //Written 2016/02/27 Pat
+//Edited  2016/02/29
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	
@@ -433,6 +436,8 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 		writeBlock(page->pageNum,buffPoolInfo,page->data);
 		//Increase write time
 		buffPoolInfo->writeNumber++;
+		//Clear Dirty Flag
+		buffPoolInfo->bufferPool[page->pageNum]->isDirty = false;
 		return RC_OK;
 	}
 	else
