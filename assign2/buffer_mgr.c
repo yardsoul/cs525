@@ -565,20 +565,20 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			free(frameContents);
 			return RC_OK;
 
-		} else {
-			ReplacementStrategy strategy = bm->strategy;
-			// Check for FIFO
-			if (strategy == 0) {
-				return doFifo(bm, page, pageNum);
-			}
-			// Check for LRU
-			if (strategy == 1) {
-				return RC_OK;
-				//return LRU(bm, page, pageNum);
-			}
-		}
+		} 
 
 	}
+	ReplacementStrategy strategy = bm->strategy;
+	// Check for FIFO
+	if (strategy == 0) {
+		return doFifo(bm, page, pageNum);
+	}
+	// Check for LRU
+	if (strategy == 1) {
+		return RC_OK;
+		//return LRU(bm, page, pageNum);
+	}
+	
 }
 
 /************************************************************
