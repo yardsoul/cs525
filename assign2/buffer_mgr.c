@@ -136,10 +136,61 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum
 
 }
 // LRU
+
 RC LRU(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
+
+BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+
+for(int i= 0; i< bm-> pageNumber; i++)
 {
+	if(bufferPool ->bufferPool[i].pageNumber = pageNum)
+	{
+		
+		bm-> pageNum = bufferPool->bufferPool[i].pageNumber;
+		if(bufferPool-> bufferPool[i].next!=NULL)
+		{
+			//pageNum located in between frames
+			if(bufferPool-> bufferPool[i].previous!=NULL)
+			{
+				bufferPool->bufferPool[i].previous->next = bufferPool-> bufferPool[i].next;
+			}	
+			//pageNum located in the firstFrame
+			else
+			{
+				bufferPool->bufferPool[i].next=NULL;
+			}
+		
+			bufferPool-> bufferPool[i].previous=bufferPool -> lastFrame;
+			bufferPool->lastFrame= bufferPool->bufferPool[i];
+		//pageNum located in the lastframe	
+		bufferpool->lastFrame = bufferPool->bufferPool[i];
+		}
+		else
+		{
+			bufferPool->lastFrame= bufferPool[i];
+			bufferPool->bufferPool[i].next=NULL;
+		}
+
+	}
+	if(bufferPool->bufferPool[i].pageNumber == NO_PAGE)
+	{
+		bufferPool->firstFrame= bufferPool->frameData; 
+		
+		if(i==0)
+		{
+			bufferPool->lastFrame=bufferPool->firstFrame;
+		}
+		bufferPool->bufferPool[i].pageNumber = pageNum;
+		bufferPool->fixCount++;
+		page->pageNum = pageNum;
+		readBlock(pageNum, &fileHandle, bufferPool->lastFrame->frameData);
+		bufferPool->readNumber++;
+		strcpy(page->data,bufferPool->lastFrame->frameData);
+		
+	}
 	return RC_OK;
-}
+}	
 // CLOCK (Extra)
 
 // LFU (Extra)
