@@ -210,6 +210,7 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	if (fHandle->mgmtInfo == NULL) {
 		return RC_FILE_NOT_FOUND;
 	}
+	
 	//Check if page does exist
 	if (0 > pageNum || fHandle->totalNumPages < pageNum)
 	{
