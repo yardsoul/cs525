@@ -401,6 +401,8 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 		// If there is any, abort shutdown
 		if (*(fixCounts + i) != 0) {
 			// Return custom error because there are pinned files
+			free(fixCounts);
+			free(dirtyFlags);
 			return RC_PINNED_PAGES;
 		}
 	}
@@ -417,7 +419,8 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 
 	// Free up resources and return RC code
 	free(buffPoolInfo);
-
+	free(fixCounts);
+	free(dirtyFlags);
 	return RC_OK;
 }
 
@@ -484,9 +487,8 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 		}
 	}
 
-	// free(dirtyFlags);
-	// free(fixCounts);
-
+	free(fixCounts);
+	free(dirtyFlags);
 	return RC_OK;
 }
 
@@ -643,18 +645,71 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	if (pageNum < 0) {
 		return RC_READ_NON_EXISTING_PAGE;
 	}
+	SM_FileHandle fileHandle;
+	char *fileName = bm->pageFile;
+	
 
-	//
+	// Allocate memory for the data pointer in the PageHandle
+	page->data = (char* ) malloc(PAGE_SIZE * sizeof(char));
 
-	ReplacementStrategy strategy = bm->strategy;
+	// Retrieve the information about the buffer pool
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
 
-	if (strategy == 0) {
-		return doFifo(bm, page, pageNum);
+	// Get number of pages to iterate
+	int numPages = bm->numPages;
+
+	// Get the content of each frame in the buffer pool
+	PageNumber *frameContents = getFrameContents(bm);
+
+	for (int i = 0; i < numPages; i++) {
+		// Check if page is already in the buffer
+		if (*(frameContents + i) == pageNum) {
+			// If it's in the buffer, copy the info to page from the frame
+			FrameInfo *frame = &bufferPool[i];
+			strcpy(page->data, frame->frameData);
+
+			// Increase fixCount and close
+			frame->fixCount++;
+			
+			free(frameContents);
+			return RC_OK;
+
+		}
+		// Check if there is a free frame that we can use
+		if (*(frameContents + i) == NO_PAGE) {
+			// Set pageNumber of frame to the page we are pinning
+			FrameInfo *frame = &bufferPool[i];
+			frame->pageNumber = pageNum;
+
+			// Increase fixCount
+			frame->fixCount++;
+			// If there's a free frame, copy page to it
+			openPageFile(fileName, &fileHandle)
+			readBlock(pageNum, &fileHandle, frame->frameData);
+			bufferPoolInfo->readNumber++;
+			strcpy(page->data, frame->frameData);
+			closePageFile(&fileHandle);
+
+			free(frameContents);
+			return RC_OK:
+
+		} else {
+			ReplacementStrategy strategy = bm->strategy;
+			// Check for FIFO
+			if (strategy == 0) {
+				return doFifo(bm, page, pageNum);
+			}
+			// Check for LRU
+			if (strategy == 1) {
+				return LRU(bm, page, pageNum);
+			}
+		}
 	}
 
-	if (strategy == 1) {
-		return LRU(bm, page, pageNum);
-	}
+
+
+
 
 	// BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	// FrameInfo *bufferPool = buffPoolInfo->bufferPool;
