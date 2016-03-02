@@ -79,43 +79,52 @@ typedef struct BufferPoolInfo
 *******************************************************************/
 RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
 {
-	// BufferPoolInfo *buffPoolInfo = bm->mgmtData;
-	// if (buffPoolInfo->firstFrame->nextFrame != NULL)
-	// {
-	// 	//If dirty write it down to disk
-	// 	if (buffPoolInfo->firstFrame->isDirty)
-	// 	{
-	// 		SM_FileHandle fileHandle;
-	// 		char *fileName = bm->pageFile;
+	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
 
-	// 		// Open file
-	// 		openPageFile(fileName, &fileHandle);
-	// 		// Write page to disk
-	// 		writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, buffPoolInfo->firstFrame->frameData);
-	// 		// Close page file
-	// 		closePageFile(&fileHandle);
-	// 		buffPoolInfo->writeNumber++;
-	// 	}
-	// 	//Pop first page
-	// 	buffPoolInfo->firstFrame = buffPoolInfo->firstFrame->nextFrame;
-	// 	buffPoolInfo->firstFrame->previousFrame = NULL;
+	SM_FileHandle fileHandle;
+	char *fileName = bm->pageFile;
 
-	// 	//Read page to memory
-	// 	RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->nextFrame->frameData);
-	// 	if (readToMem != RC_OK)
-	// 	{
-	// 		return RC_READ_NON_EXISTING_PAGE;
-	// 	}
-	// 	buffPoolInfo->readNumber++;
-	// 	buffPoolInfo->lastFrame->nextFrame->previousFrame = buffPoolInfo->lastFrame;
-	// 	buffPoolInfo->lastFrame = buffPoolInfo->lastFrame->nextFrame;
-	// 	buffPoolInfo->lastFrame->pageNumber = pageNum;
-	// 	page->data = buffPoolInfo->lastFrame->frameData;
-	// 	page->pageNum = pageNum;
-	// 	return RC_OK;
-	// }
-	// return RC_READ_NON_EXISTING_PAGE;
-	return RC_OK;
+	if (buffPoolInfo->firstFrame->nextFrame != NULL)
+	{
+		//If dirty write it down to disk
+		if (buffPoolInfo->firstFrame->isDirty)
+		{
+			// Open file
+			openPageFile(fileName, &fileHandle);
+			// Write page to disk
+			writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, buffPoolInfo->firstFrame->frameData);
+			// Close page file
+			closePageFile(&fileHandle);
+			buffPoolInfo->writeNumber++;
+		}
+
+		//Pop first frame bu shrift every frame by one
+		for (int i = 0; i < bm->numPages - 1; i++)
+		{
+			bufferPool[i].frameData = bufferPool[i + 1].frameData;
+			bufferPool[i].pageNumber = bufferPool[i + 1].pageNumber;
+		}
+
+		//Set last frame
+		// Open file
+		openPageFile(fileName, &fileHandle);
+		//Read page to memory
+		RC readToMem = readBlock(pageNum, &fileHandle, buffPoolInfo->lastFrame->frameData);
+		// Close page file
+		closePageFile(&fileHandle);
+		if (readToMem != RC_OK)
+		{
+			return readToMem;
+		}
+		buffPoolInfo->readNumber++;
+		buffPoolInfo->lastFrame->pageNumber = pageNum;
+		page->data = buffPoolInfo->lastFrame->frameData;
+		page->pageNum = pageNum;
+		return RC_OK;
+	}
+	return RC_READ_NON_EXISTING_PAGE;
+
 }
 // LRU
 RC LRU(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
@@ -394,7 +403,7 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 	if (numPages >= page->pageNum) {
 		// Mark as dirty
-		*(page->pageNum+dirtyFlags) = true;
+		*(page->pageNum + dirtyFlags) = true;
 		return RC_OK;
 	}
 // Page not found
@@ -432,13 +441,13 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	for(int i = 0;i < numPages;i++)
+	for (int i = 0; i < numPages; i++)
 	{
-		if(bufferPool[i].pageNumber==page->pageNum)
+		if (bufferPool[i].pageNumber == page->pageNum)
 		{
-			if(bufferPool[i].isDirty)
+			if (bufferPool[i].isDirty)
 			{
-				forcePage(bm,page);
+				forcePage(bm, page);
 			}
 			bufferPool[i].fixCount--;
 			return RC_OK;
@@ -493,7 +502,7 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 		//Increase write time
 		buffPoolInfo->writeNumber++;
 		//Clear Dirty Flag
-		*(page->pageNum+dirtyFlags) = false;
+		*(page->pageNum + dirtyFlags) = false;
 		return RC_OK;
 	}
 	else
@@ -560,19 +569,20 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			free(frameContents);
 			return RC_OK;
 
-		} else {
-			ReplacementStrategy strategy = bm->strategy;
-			// Check for FIFO
-			if (strategy == 0) {
-				return doFifo(bm, page, pageNum);
-			}
-			// Check for LRU
-			if (strategy == 1) {
-				return LRU(bm, page, pageNum);
-			}
 		}
-
 	}
+	free(frameContents);
+	ReplacementStrategy strategy = bm->strategy;
+	// Check for FIFO
+	if (strategy == 0) {
+		return doFifo(bm, page, pageNum);
+	}
+	// Check for LRU
+	if (strategy == 1) {
+		return RC_OK;
+		//return LRU(bm, page, pageNum);
+	}
+
 }
 
 /************************************************************
