@@ -80,6 +80,7 @@ typedef struct BufferPoolInfo
 RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
 {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
 	if (buffPoolInfo->firstFrame->nextFrame != NULL)
 	{
 		//If dirty write it down to disk
@@ -96,19 +97,22 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum
 			closePageFile(&fileHandle);
 			buffPoolInfo->writeNumber++;
 		}
-		//Pop first page
-		buffPoolInfo->firstFrame = buffPoolInfo->firstFrame->nextFrame;
-		buffPoolInfo->firstFrame->previousFrame = NULL;
-
+		
+		//Pop first frame bu shrift every frame by one
+		for(int i; i<bm->numPages-1; i++)
+		{
+			bufferPool[i].frameData = bufferPool[i+1].frameData;
+			bufferPool[i].pageNumber = bufferPool[i+1].pageNumber;
+		}
+		
+		//Set last frame
 		//Read page to memory
-		RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->nextFrame->frameData);
+		RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->frameData);
 		if (readToMem != RC_OK)
 		{
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 		buffPoolInfo->readNumber++;
-		buffPoolInfo->lastFrame->nextFrame->previousFrame = buffPoolInfo->lastFrame;
-		buffPoolInfo->lastFrame = buffPoolInfo->lastFrame->nextFrame;
 		buffPoolInfo->lastFrame->pageNumber = pageNum;
 		page->data = buffPoolInfo->lastFrame->frameData;
 		page->pageNum = pageNum;
