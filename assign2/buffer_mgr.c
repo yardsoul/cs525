@@ -79,42 +79,43 @@ typedef struct BufferPoolInfo
 *******************************************************************/
 RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
 {
-	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
-	if (buffPoolInfo->firstFrame->nextFrame != NULL)
-	{
-		//If dirty write it down to disk
-		if (buffPoolInfo->firstFrame->isDirty)
-		{
-			SM_FileHandle fileHandle;
-			char *fileName = bm->pageFile;
+	// BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	// if (buffPoolInfo->firstFrame->nextFrame != NULL)
+	// {
+	// 	//If dirty write it down to disk
+	// 	if (buffPoolInfo->firstFrame->isDirty)
+	// 	{
+	// 		SM_FileHandle fileHandle;
+	// 		char *fileName = bm->pageFile;
 
-			// Open file
-			openPageFile(fileName, &fileHandle);
-			// Write page to disk
-			writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, buffPoolInfo->firstFrame->frameData);
-			// Close page file
-			closePageFile(&fileHandle);
-			buffPoolInfo->writeNumber++;
-		}
-		//Pop first page
-		buffPoolInfo->firstFrame = buffPoolInfo->firstFrame->nextFrame;
-		buffPoolInfo->firstFrame->previousFrame = NULL;
+	// 		// Open file
+	// 		openPageFile(fileName, &fileHandle);
+	// 		// Write page to disk
+	// 		writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, buffPoolInfo->firstFrame->frameData);
+	// 		// Close page file
+	// 		closePageFile(&fileHandle);
+	// 		buffPoolInfo->writeNumber++;
+	// 	}
+	// 	//Pop first page
+	// 	buffPoolInfo->firstFrame = buffPoolInfo->firstFrame->nextFrame;
+	// 	buffPoolInfo->firstFrame->previousFrame = NULL;
 
-		//Read page to memory
-		RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->nextFrame->frameData);
-		if (readToMem != RC_OK)
-		{
-			return RC_READ_NON_EXISTING_PAGE;
-		}
-		buffPoolInfo->readNumber++;
-		buffPoolInfo->lastFrame->nextFrame->previousFrame = buffPoolInfo->lastFrame;
-		buffPoolInfo->lastFrame = buffPoolInfo->lastFrame->nextFrame;
-		buffPoolInfo->lastFrame->pageNumber = pageNum;
-		page->data = buffPoolInfo->lastFrame->frameData;
-		page->pageNum = pageNum;
-		return RC_OK;
-	}
-	return RC_READ_NON_EXISTING_PAGE;
+	// 	//Read page to memory
+	// 	RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->nextFrame->frameData);
+	// 	if (readToMem != RC_OK)
+	// 	{
+	// 		return RC_READ_NON_EXISTING_PAGE;
+	// 	}
+	// 	buffPoolInfo->readNumber++;
+	// 	buffPoolInfo->lastFrame->nextFrame->previousFrame = buffPoolInfo->lastFrame;
+	// 	buffPoolInfo->lastFrame = buffPoolInfo->lastFrame->nextFrame;
+	// 	buffPoolInfo->lastFrame->pageNumber = pageNum;
+	// 	page->data = buffPoolInfo->lastFrame->frameData;
+	// 	page->pageNum = pageNum;
+	// 	return RC_OK;
+	// }
+	// return RC_READ_NON_EXISTING_PAGE;
+	return RC_OK;
 }
 // LRU
 RC LRU(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
