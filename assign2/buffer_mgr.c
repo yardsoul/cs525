@@ -77,17 +77,17 @@ typedef struct BufferPoolInfo
 *            2016-02-29    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added header comment and correction
 *
 *******************************************************************/
-RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
+RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
 {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
-	if(buffPoolInfo->firstFrame->nextFrame!=NULL)
+	if (buffPoolInfo->firstFrame->nextFrame != NULL)
 	{
 		//If dirty write it down to disk
-		if(buffPoolInfo->firstFrame->isDirty)
+		if (buffPoolInfo->firstFrame->isDirty)
 		{
 			SM_FileHandle fileHandle;
 			char *fileName = bm->pageFile;
-			
+
 			// Open file
 			openPageFile(fileName, &fileHandle);
 			// Write page to disk
@@ -99,10 +99,10 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 		//Pop first page
 		buffPoolInfo->firstFrame = buffPoolInfo->firstFrame->nextFrame;
 		buffPoolInfo->firstFrame->previousFrame = NULL;
-		
+
 		//Read page to memory
 		RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->nextFrame->frameData);
-		if(readToMem != RC_OK)
+		if (readToMem != RC_OK)
 		{
 			return RC_READ_NON_EXISTING_PAGE;
 		}
@@ -221,7 +221,7 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 /*******************************************************************
 * NAME :            RC shutdownBufferPool(BM_BufferPool *const bm)
 *
-* DESCRIPTION :     Destroys a buffer pool. This method also frees up all resources 
+* DESCRIPTION :     Destroys a buffer pool. This method also frees up all resources
 *					associated with the buffer pool.
 *
 * PARAMETERS:
@@ -276,12 +276,9 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 
 	// Free up resources and return RC code
 	free(buffPoolInfo);
-<<<<<<< HEAD
+
 	free(fixCounts);
 	free(dirtyFlags);
-=======
-	
->>>>>>> f72a86426b9670953f4bbdab12acf651aa72b52c
 	return RC_OK;
 }
 
@@ -328,7 +325,7 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 	for (int i = 0; i < numPages; i++) {
 		// If dirty flag and not pinned
 		if ((*(dirtyFlags + i) == true) && (*(fixCounts + i) == 0)) {
-			
+
 			// Load frame and page number
 			FrameInfo *frame = &(buffPoolInfo->bufferPool[i]);
 			PageNumber pageNum = frame->pageNumber;
@@ -358,7 +355,7 @@ RC forceFlushPool(BM_BufferPool *const bm) {
  ************************************************************/
 
 /*******************************************************************
-* NAME :           RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) 
+* NAME :           RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page)
 *
 * DESCRIPTION :     Mark page as dirty
 *
@@ -383,24 +380,24 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 *
 *******************************************************************/
 RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
-	
+
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
-	
+
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	
-	if(numPages >= page->pageNum)
-			// Mark as dirty
-			bufferPool[page->pageNum]->isDirty = true;
-			return RC_OK;
+
+	if (numPages >= page->pageNum) {
+		// Mark as dirty
+		bufferPool[page->pageNum]->isDirty = true;
+		return RC_OK;
 	}
-	// Page not found
+// Page not found
 	return RC_WRITE_FAILED;
 }
 
 /*******************************************************************
-* NAME :           RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) 
+* NAME :           RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page)
 *
 * DESCRIPTION :     Unpin page in memory
 *
@@ -424,17 +421,17 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 *
 *******************************************************************/
 RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
-	
+
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
-	
+
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	if(numPages >= page->pageNum)
+	if (numPages >= page->pageNum)
 	{
-		if(bufferPool[page->pageNum]->isDirty)
+		if (bufferPool[page->pageNum]->isDirty)
 		{
-			forcePage(bm,page);
+			forcePage(bm, page);
 		}
 		bufferPool[page->pageNum]->fixCount--;
 		return RC_OK;
@@ -470,13 +467,13 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 *******************************************************************/
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
-	
+
 	//If buffer pool exists
-	if(buffPoolInfo!=NULL)
+	if (buffPoolInfo != NULL)
 	{
 		SM_FileHandle fileHandle;
 		char *fileName = bm->pageFile;
-		
+
 		// Open file
 		openPageFile(fileName, &fileHandle);
 		// Write page to disk
@@ -502,13 +499,13 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 // Fixed 2016/03/01
 RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
             const PageNumber pageNum) {
-	
+
 	if (pageNum < 0) {
 		return RC_READ_NON_EXISTING_PAGE;
 	}
 	SM_FileHandle fileHandle;
 	char *fileName = bm->pageFile;
-	
+
 
 	// Allocate memory for the data pointer in the PageHandle
 	page->data = (char* ) malloc(PAGE_SIZE * sizeof(char));
@@ -532,7 +529,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 
 			// Increase fixCount and close
 			frame->fixCount++;
-			
+
 			free(frameContents);
 			return RC_OK;
 
@@ -546,14 +543,14 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			// Increase fixCount
 			frame->fixCount++;
 			// If there's a free frame, copy page to it
-			openPageFile(fileName, &fileHandle)
+			openPageFile(fileName, &fileHandle);
 			readBlock(pageNum, &fileHandle, frame->frameData);
-			bufferPoolInfo->readNumber++;
+			buffPoolInfo->readNumber++;
 			strcpy(page->data, frame->frameData);
 			closePageFile(&fileHandle);
 
 			free(frameContents);
-			return RC_OK:
+			return RC_OK;
 
 		} else {
 			ReplacementStrategy strategy = bm->strategy;
@@ -567,19 +564,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			}
 		}
 
-	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
-	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
-	
-	// Get number of pages on buffer pool
-	int numPages = bm->numPages;
-	
-	//pins pageNum page
-	if(numPages = page->pageNum)
-	{
-		bufferPool[page->pageNum]->fixCount++;
-		return RC_OK;
 	}
-
 }
 
 /************************************************************
@@ -589,15 +574,15 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 /*******************************************************************
 * NAME :            PageNumber *getFrameContents (BM_BufferPool *const bm)
 *
-* DESCRIPTION :     Returns an array of PageNumbers (of size numPages) where the ith element is 
-*					the number of the page stored in the ith page frame. 
+* DESCRIPTION :     Returns an array of PageNumbers (of size numPages) where the ith element is
+*					the number of the page stored in the ith page frame.
 *					An empty page frame is represented using the constant NO_PAGE.
 *
 * PARAMETERS:
 *            BM_BufferPool *const bm        	Stores specific information about a buffer pool
 *
 * RETURN :
-*            Type:   PageNumber *            
+*            Type:   PageNumber *
 *            Values: integer representing the number of the page stored in the ith frame, NO_PAGE if empty.
 *
 * AUTHOR :
@@ -621,7 +606,7 @@ PageNumber *getFrameContents (BM_BufferPool *const bm) {
 	// Allocate a buffer to write the page numbers with numPages size
 	PageNumber *frameContents = (PageNumber *) malloc(numPages * sizeof(PageNumber));
 
-	for (int i = 0; i < numPages; i++){
+	for (int i = 0; i < numPages; i++) {
 		// Obtain the information directly from the buffer pool struct
 		frameContents[i] = bufferPool[i].pageNumber;
 	}
@@ -632,15 +617,15 @@ PageNumber *getFrameContents (BM_BufferPool *const bm) {
 /*******************************************************************
 * NAME :            bool *getDirtyFlags (BM_BufferPool *const bm)
 *
-* DESCRIPTION :     Returns an array of bools (of size numPages) where the ith element 
-*					is TRUE if the page stored in the ith page frame is dirty. 
+* DESCRIPTION :     Returns an array of bools (of size numPages) where the ith element
+*					is TRUE if the page stored in the ith page frame is dirty.
 *					Empty page frames are considered as clean.
 *
 * PARAMETERS:
 *            BM_BufferPool *const bm        	Stores specific information about a buffer pool
 *
 * RETURN :
-*            Type:   bool *            
+*            Type:   bool *
 *            Values: boolean representing if page stored in the ith frame is dirty (true) or not (false)
 *
 * AUTHOR :
@@ -676,15 +661,15 @@ bool *getDirtyFlags (BM_BufferPool *const bm) {
 /*******************************************************************
 * NAME :            int *getFixCounts (BM_BufferPool *const bm)
 *
-* DESCRIPTION :     Returns an array of ints (of size numPages) where the ith element is 
-*					the fix count of the page stored in the ith page frame. 
+* DESCRIPTION :     Returns an array of ints (of size numPages) where the ith element is
+*					the fix count of the page stored in the ith page frame.
 *					Return 0 for empty page frames.
 *
 * PARAMETERS:
 *            BM_BufferPool *const bm        	Stores specific information about a buffer pool
 *
 * RETURN :
-*            Type:   int *            
+*            Type:   int *
 *            Values: integer representing the number of clients that pinned the file
 *
 * AUTHOR :
@@ -719,14 +704,14 @@ int *getFixCounts (BM_BufferPool *const bm) {
 /*******************************************************************
 * NAME :            int getNumReadIO (BM_BufferPool *const bm)
 *
-* DESCRIPTION :     Returns the number of pages that have been read from disk since 
+* DESCRIPTION :     Returns the number of pages that have been read from disk since
 *					a buffer pool has been initialized.
 *
 * PARAMETERS:
 *            BM_BufferPool *const bm        	Stores specific information about a buffer pool
 *
 * RETURN :
-*            Type:   int *            
+*            Type:   int *
 *            Values: integer representing the number of pages read from disk
 *
 * AUTHOR :
@@ -748,14 +733,14 @@ int getNumReadIO (BM_BufferPool *const bm) {
 /*******************************************************************
 * NAME :            int getNumWriteIO (BM_BufferPool *const bm)
 *
-* DESCRIPTION :     Returns the number of pages written to the page file since 
+* DESCRIPTION :     Returns the number of pages written to the page file since
 *					the buffer pool has been initialized.
 *
 * PARAMETERS:
 *            BM_BufferPool *const bm        	Stores specific information about a buffer pool
 *
 * RETURN :
-*            Type:   int *            
+*            Type:   int *
 *            Values: integer representing the number of pages written to the page file
 *
 * AUTHOR :
