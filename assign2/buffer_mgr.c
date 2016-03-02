@@ -431,16 +431,17 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	bool *dirtyFlags = getDirtyFlags(bm);
-	int *fixCounts = getFixCounts(bm);
-	if (numPages >= page->pageNum)
+	for(int i = 0;i < numPages;i++)
 	{
-		if (*(page->pageNum+dirtyFlags)==true)
+		if(bufferPool[i]==page->pageNum)
 		{
-			forcePage(bm, page);
+			if(bufferPool[i]->isDirty)
+			{
+				forcePage(bm,page);
+			}
+			bufferPool[i]->fixCount--;
+			return RC_OK;
 		}
-		*(page->pageNum+fixCounts) -= 1;
-		return RC_OK;
 	}
 	// Page not found
 	return RC_WRITE_FAILED;
