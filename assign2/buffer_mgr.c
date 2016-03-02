@@ -117,7 +117,10 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum
 	return RC_READ_NON_EXISTING_PAGE;
 }
 // LRU
-
+RC LRU(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
+{
+	return RC_OK;
+}
 // CLOCK (Extra)
 
 // LFU (Extra)
