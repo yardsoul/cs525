@@ -81,14 +81,15 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum
 {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+	
+	SM_FileHandle fileHandle;
+	char *fileName = bm->pageFile;
+	
 	if (buffPoolInfo->firstFrame->nextFrame != NULL)
 	{
 		//If dirty write it down to disk
 		if (buffPoolInfo->firstFrame->isDirty)
 		{
-			SM_FileHandle fileHandle;
-			char *fileName = bm->pageFile;
-
 			// Open file
 			openPageFile(fileName, &fileHandle);
 			// Write page to disk
@@ -106,11 +107,15 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum
 		}
 		
 		//Set last frame
+		// Open file
+		openPageFile(fileName, &fileHandle);
 		//Read page to memory
-		RC readToMem = readBlock(pageNum, bm->mgmtData, buffPoolInfo->lastFrame->frameData);
+		RC readToMem = readBlock(pageNum, &fileHandle, buffPoolInfo->lastFrame->frameData);
+		// Close page file
+		closePageFile(&fileHandle);
 		if (readToMem != RC_OK)
 		{
-			return RC_READ_NON_EXISTING_PAGE;
+			return readToMem;
 		}
 		buffPoolInfo->readNumber++;
 		buffPoolInfo->lastFrame->pageNumber = pageNum;
@@ -568,7 +573,8 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			}
 			// Check for LRU
 			if (strategy == 1) {
-				return LRU(bm, page, pageNum);
+				return RC_OK;
+				//return LRU(bm, page, pageNum);
 			}
 		}
 
