@@ -120,10 +120,10 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 typedef struct Hash
 {
     //number of frames that can be stored
-    int capacity
+    int capacity;
     //an array of nodes
-    FrameInfo* *array
-}
+    FrameInfo* *array;
+} Hash;
 
 FrameInfo* createNode(const int frameNumber)
 {
@@ -136,19 +136,6 @@ FrameInfo* createNode(const int frameNumber)
     return temp;
 }
 
-BufferPoolInfo* createQueue( int numPages)
-{
-    //allocate memory
-    BufferPoolInfo* bufferPool = (BufferPoolInfo *)malloc(sizeof(BufferPoolInfo));
-    //set the count to 0
-    bufferPool->count = 0;
-    //assign the head and tail as NULL
-    bufferPool-> firstFrame = bufferPool->lastFrame= NULL;
-    
-    //number of frames that can be stored
-    bufferPool->numPages = numPages;
-}
-
 Hash* createHash(PageNumber pageNumber)
 {
     //allocate memory
@@ -156,7 +143,7 @@ Hash* createHash(PageNumber pageNumber)
     //assign the capacity
     hash-> capacity = pageNumber;
     //create an array of index
-    hash-> array =(FrameInfo**)malloc(hash->capacity * sizeof(Node));
+    hash-> array =(FrameInfo *)malloc(hash->capacity * sizeof(Node));
     int i;
     //initialize all entries of the hash to NULL
     for(i =0; i <hash->capacity;++i)
@@ -216,7 +203,7 @@ void enqueue(BufferPoolInfo* bufferPool, Hash* hash, PageNumber pageNumber)
     temp->nextFrame = bufferPool->firstFrame;
     
     //if queue is empty, change both head and firstFrame pointers
-    if(isEmpty(BufferPoolInfo))
+    if(isEmpty(bufferPool))
     bufferPool->lastFrame= bufferPool->firstFrame= temp;
     //else change only the head pointer
     else
@@ -540,7 +527,7 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
 	
-	if(numPages >= page->pageNum)
+	if(numPages >= page->pageNum) {
 			// Mark as dirty
 			bufferPool[page->pageNum]->isDirty = true;
 			return RC_OK;
@@ -660,7 +647,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	int numPages = bm->numPages;
 	
 	//pins pageNum page
-	if(numPages = page->pageNum)
+	if(numPages == page->pageNum)
 	{
 		bufferPool[page->pageNum]->fixCount++;
 		return RC_OK;
@@ -679,7 +666,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	return RC_WRITE_FAILED;
 }
 
-}
+
 
 /************************************************************
  *                   Statistics Interface                   *
