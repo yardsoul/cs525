@@ -213,12 +213,14 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	//Check if page does exist
 	if (0 > pageNum || fHandle->totalNumPages < pageNum)
 	{
+		printf("FLAG1!!\n");
 		return RC_READ_NON_EXISTING_PAGE;
 	}
 	else
 	{
 		//Read and write block to memPage (Expected number of element read should be return)
 		if(fseek(fHandle->mgmtInfo, pageFirstByte, SEEK_SET) != 0) {
+			printf("FLAG2!!\n");
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 
@@ -232,6 +234,9 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 		}
 		else
 		{
+			printf("FLAG3!!\n");
+			printf("%zu\n", size);
+			printf("%d\n", pageNum);
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 	}
