@@ -116,7 +116,6 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum
 	openPageFile(fileName, &fileHandle);
 
 	ensureCapacity(pageNum + 1, &fileHandle);
-
 	//Read page to memory
 	RC readToMem = readBlock(pageNum, &fileHandle, buffPoolInfo->lastFrame->frameData);
 	// Close page file
