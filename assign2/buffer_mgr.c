@@ -386,10 +386,11 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
+	bool *dirtyFlags = getDirtyFlags(bm);
 
 	if (numPages >= page->pageNum) {
 		// Mark as dirty
-		bufferPool[page->pageNum]->isDirty = true;
+		*(page->pageNum+dirtyFlags) = true;
 		return RC_OK;
 	}
 // Page not found
@@ -427,13 +428,15 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
+	bool *dirtyFlags = getDirtyFlags(bm);
+	int *fixCounts = getFixCounts(bm);
 	if (numPages >= page->pageNum)
 	{
-		if (bufferPool[page->pageNum]->isDirty)
+		if (*(page->pageNum+dirtyFlags)==true)
 		{
 			forcePage(bm, page);
 		}
-		bufferPool[page->pageNum]->fixCount--;
+		*(page->pageNum+fixCounts) -= 1;
 		return RC_OK;
 	}
 	// Page not found
@@ -467,7 +470,7 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 *******************************************************************/
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
-
+	bool *dirtyFlags = getDirtyFlags(bm);
 	//If buffer pool exists
 	if (buffPoolInfo != NULL)
 	{
@@ -485,7 +488,7 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 		//Increase write time
 		buffPoolInfo->writeNumber++;
 		//Clear Dirty Flag
-		buffPoolInfo->bufferPool[page->pageNum]->isDirty = false;
+		*(page->pageNum+dirtyFlags) = false;
 		return RC_OK;
 	}
 	else
