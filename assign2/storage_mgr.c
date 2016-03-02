@@ -200,7 +200,7 @@ RC destroyPageFile (char *fileName) {
 *            2016-02-01	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Initialization
 *            2016-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Add missing fseek
 *            2016-02-06     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>      Added comments and header comment
-*	     2016-02-08     Adrian Tirados <atirados@hawk.iit.edu>		       Added check for opened file
+*	     	 2016-02-08     Adrian Tirados <atirados@hawk.iit.edu>		       Added check for opened file
 *
 *******************************************************************/
 RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
@@ -219,7 +219,14 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	{
 		//Read and write block to memPage (Expected number of element read should be return)
 		fseek(fHandle->mgmtInfo, pageFirstByte, SEEK_SET);
-		if (fread(memPage, 1, PAGE_SIZE, fHandle->mgmtInfo) == PAGE_SIZE)
+		// printf("%zu\n", fread(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo));
+		// printf("%d\n", PAGE_SIZE);
+		
+		// unsigned long size = (unsigned long) PAGE_SIZE;
+		// printf("%d\n", fread(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo) == size);
+		int size = fread(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo);
+		printf("%d\n", size == PAGE_SIZE);
+		if (size == PAGE_SIZE)
 		{
 			//Set current page position
 			fHandle->curPagePos = pageNum;
@@ -227,6 +234,7 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 		}
 		else
 		{
+			printf("FLAG\n");
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 	}
@@ -529,13 +537,20 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 	//gets the current file position
 	int len = ftell(pageFile);
 
+	struct stat st;
+	stat(fHandle->fileName, &st);
+	int size = st.st_size;
+
 	//initializes an array with a size of PAGE_SIZE
 	// char buffer[PAGE_SIZE] = "";
 	//writes data
 	fwrite (buffer, sizeof(char), PAGE_SIZE, pageFile);
 
+	stat(fHandle->fileName, &st);
+	int newSize = st.st_size;
+
 	//check if a new block of size PAGE_SIZE is appeneded
-	if (len + sizeof(buffer) != ftell(pageFile)) {
+	if (size + PAGE_SIZE != newSize) {
 		free(buffer);
 		return RC_WRITE_FAILED;
 	}
@@ -543,7 +558,8 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 	free(buffer);
 	fclose(pageFile);
 	//increments the total number of pages
-	(fHandle -> totalNumPages)++;
+	fHandle->totalNumPages++;
+	fHandle->curPagePos++;
 	return RC_OK;
 }
 
