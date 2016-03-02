@@ -433,13 +433,13 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	int numPages = bm->numPages;
 	for(int i = 0;i < numPages;i++)
 	{
-		if(bufferPool[i]==page->pageNum)
+		if(bufferPool[i].pageNumber==page->pageNum)
 		{
-			if(bufferPool[i]->isDirty)
+			if(bufferPool[i].isDirty)
 			{
 				forcePage(bm,page);
 			}
-			bufferPool[i]->fixCount--;
+			bufferPool[i].fixCount--;
 			return RC_OK;
 		}
 	}
