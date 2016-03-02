@@ -100,10 +100,12 @@ RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum
 		// Open file
 			openPageFile(fileName, &fileHandle);
 			// Write page to disk
-			writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, buffPoolInfo->firstFrame->frameData);
+			writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, frame->frameData);
+			frame->isDirty = false;
 			// Close page file
 			closePageFile(&fileHandle);
 			buffPoolInfo->writeNumber++;
+			
 	}
 	//Pop first frame bu shrift every frame by one
 	for (int i = frameCounter; i < bm->numPages - 1 ; i++)
