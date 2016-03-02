@@ -210,23 +210,22 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	if (fHandle->mgmtInfo == NULL) {
 		return RC_FILE_NOT_FOUND;
 	}
-	
 	//Check if page does exist
 	if (0 > pageNum || fHandle->totalNumPages < pageNum)
 	{
+		printf("FLAG1!!\n");
 		return RC_READ_NON_EXISTING_PAGE;
 	}
 	else
 	{
 		//Read and write block to memPage (Expected number of element read should be return)
-		fseek(fHandle->mgmtInfo, pageFirstByte, SEEK_SET);
-		// printf("%zu\n", fread(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo));
-		// printf("%d\n", PAGE_SIZE);
-		
-		// unsigned long size = (unsigned long) PAGE_SIZE;
-		// printf("%d\n", fread(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo) == size);
-		int size = fread(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo);
-		printf("%d\n", size == PAGE_SIZE);
+		if(fseek(fHandle->mgmtInfo, pageFirstByte, SEEK_SET) != 0) {
+			printf("FLAG2!!\n");
+			return RC_READ_NON_EXISTING_PAGE;
+		}
+
+		unsigned long size = fread(memPage, sizeof(char), PAGE_SIZE, fHandle->mgmtInfo);
+
 		if (size == PAGE_SIZE)
 		{
 			//Set current page position
@@ -235,7 +234,9 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 		}
 		else
 		{
-			printf("FLAG\n");
+			printf("FLAG3!!\n");
+			printf("%zu\n", size);
+			printf("%d\n", pageNum);
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 	}
@@ -415,7 +416,8 @@ RC readNextBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 *******************************************************************/
 RC readLastBlock (SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	// Call readBlock to read last page (totalNumPages) and return its RC
-	return readBlock(fHandle->totalNumPages, fHandle, memPage);
+	int lastBlock = fHandle->totalNumPages-1;
+	return readBlock(lastBlock, fHandle, memPage);
 }
 
 /************************************************************
@@ -532,18 +534,11 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 
 	char *buffer = (char *) calloc(PAGE_SIZE, sizeof(char));
 
-	//sets the file position of the stream to the end of file
-	fseek(pageFile, 0, SEEK_END);
-
-	//gets the current file position
-	int len = ftell(pageFile);
 
 	struct stat st;
 	stat(fHandle->fileName, &st);
 	int size = st.st_size;
 
-	//initializes an array with a size of PAGE_SIZE
-	// char buffer[PAGE_SIZE] = "";
 	//writes data
 	fwrite (buffer, sizeof(char), PAGE_SIZE, pageFile);
 
@@ -557,7 +552,7 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 	}
 
 	free(buffer);
-	fclose(pageFile);
+
 	//increments the total number of pages
 	fHandle->totalNumPages++;
 	fHandle->curPagePos++;
