@@ -566,8 +566,8 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			return RC_OK;
 
 		} 
-
 	}
+	free(frameContents);
 	ReplacementStrategy strategy = bm->strategy;
 	// Check for FIFO
 	if (strategy == 0) {
