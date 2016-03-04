@@ -29,7 +29,7 @@ typedef struct FrameInfo
 } FrameInfo;
 
 /*
-Struct that contains the buffer pool itself, as well as essential information needed for
+Struct that contains the buffer pool itself, as well as essential information needed 
 management purposes.
 */
 typedef struct BufferPoolInfo
@@ -86,9 +86,11 @@ RC manageBuffer(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber p
 	int numPages = bm->numPages;
 	FrameInfo *frameWillBeUse =  &bufferPool[0];
 
-	for (int i = 0 ; i < numPages; i++)
+	int j;
+
+	for (j = 0; j < numPages; j++)
 	{
-		FrameInfo *frameCompare = &bufferPool[i];
+		FrameInfo *frameCompare = &bufferPool[j];
 
 		if (frameWillBeUse->timeStamp > frameCompare->timeStamp)
 		{
@@ -284,7 +286,8 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 	bool *dirtyFlags = getDirtyFlags(bm);
 
 	// Check if there are any frames accessed by any client(s)
-	for (int i = 0; i < numPages; i++) {
+	int i;
+	for (i = 0; i < numPages; i++) {
 		// If there is any, abort shutdown
 		if (*(fixCounts + i) != 0) {
 			// Return custom error because there are pinned files
@@ -295,7 +298,7 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 	}
 
 	// Check if there are any frames with unsaved changes
-	for (int i = 0; i < numPages; i++) {
+	for (i = 0; i < numPages; i++) {
 		// If there are dirty frames, save changes by calling forceFlushPool
 		if (*(dirtyFlags + i) == true) {
 			SM_FileHandle fileHandle;
@@ -361,7 +364,8 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 
 	int *fixCounts = getFixCounts(bm);
 
-	for (int i = 0; i < numPages; i++) {
+	int i;
+	for (i = 0; i < numPages; i++) {
 		// If dirty flag and not pinned
 		if ((*(dirtyFlags + i) == true) && (*(fixCounts + i) == 0)) {
 			// Load frame and page number
@@ -427,7 +431,8 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	int numPages = bm->numPages;
 	bool *dirtyFlags = getDirtyFlags(bm);
 
-	for (int i = 0; i < numPages; i++) {
+	int i;
+	for (i = 0; i < numPages; i++) {
 		FrameInfo *frame = &bufferPool[i];
 		if (frame->pageNumber == page->pageNum) {
 			strcpy(frame->frameData, page->data);
@@ -472,7 +477,9 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	for (int i = 0; i < numPages; i++)
+	
+	int i;
+	for (i = 0; i < numPages; i++)
 	{
 		FrameInfo *frame = &bufferPool[i];
 		if (frame->pageNumber == page->pageNum)
@@ -515,7 +522,9 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
 	SM_FileHandle fileHandle;
 	char *fileName = bm->pageFile;
-	for (int i = 0; i < bm->numPages; i++)
+	
+	int i;
+	for (i = 0; i < bm->numPages; i++)
 	{
 		if (bufferPool[i].pageNumber == page->pageNum)
 		{
@@ -585,7 +594,8 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	// Get the content of each frame in the buffer pool
 	PageNumber *frameContents = getFrameContents(bm);
 
-	for (int i = 0; i < numPages; i++) {
+	int i;
+	for (i = 0; i < numPages; i++) {
 		page->pageNum = pageNum;
 		// Check if page is already in the buffer
 		if (*(frameContents + i) == pageNum) {
@@ -603,7 +613,8 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			return RC_OK;
 		}
 	}
-	for (int i = 0; i < numPages; i++) {
+
+	for (i = 0; i < numPages; i++) {
 		page->pageNum = pageNum;
 		// Check if there is a free frame that we can use
 		if (*(frameContents + i) == NO_PAGE) {
@@ -672,7 +683,8 @@ PageNumber *getFrameContents (BM_BufferPool *const bm) {
 	// Allocate a buffer to write the page numbers with numPages size
 	PageNumber *frameContents = (PageNumber *) malloc(numPages * sizeof(PageNumber));
 
-	for (int i = 0; i < numPages; i++) {
+	int i;
+	for (i = 0; i < numPages; i++) {
 		// Obtain the information directly from the buffer pool struct
 		frameContents[i] = bufferPool[i].pageNumber;
 	}
@@ -716,7 +728,8 @@ bool *getDirtyFlags (BM_BufferPool *const bm) {
 	bool *dirtyFlags = (bool *) malloc(numPages * sizeof(bool));
 
 	// Iterate through the frames and fill this array
-	for (int i = 0; i < numPages; i++) {
+	int i;
+	for (i = 0; i < numPages; i++) {
 		// Obtain the information directly from the buffer pool struct
 		dirtyFlags[i] = bufferPool[i].isDirty;
 	}
@@ -759,7 +772,8 @@ int *getFixCounts (BM_BufferPool *const bm) {
 	// Allocate a buffer of ints of numPages size
 	int *fixCounts = (int *) malloc(numPages * sizeof(int));
 
-	for (int i = 0; i < numPages; i++) {
+	int i;
+	for (i = 0; i < numPages; i++) {
 		// Obtain the information directly from the buffer pool struct
 		fixCounts[i] = bufferPool[i].fixCount;
 	}
