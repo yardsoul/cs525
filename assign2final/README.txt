@@ -29,8 +29,10 @@ CWID: A20340002
 File List
 ----------
 
+README.txt
 Makefile
 buffer_mgr.h
+buffer_mgr.c
 buffer_mgr_stat.c
 buffer_mgr_stat.h
 dberror.c
