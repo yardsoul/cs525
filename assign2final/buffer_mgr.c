@@ -29,7 +29,7 @@ typedef struct FrameInfo
 } FrameInfo;
 
 /*
-Struct that contains the buffer pool itself, as well as essential information needed 
+Struct that contains the buffer pool itself, as well as essential information needed
 management purposes.
 */
 typedef struct BufferPoolInfo
@@ -56,7 +56,7 @@ long globalTime = 0;
 /*******************************************************************
 * NAME :            RC mangeBuffer(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 *
-* DESCRIPTION :     Store block in to memory using FIFO strategy
+* DESCRIPTION :     Manage the position where the pages are loaded in the buffer based on the timestamp
 *
 * PARAMETERS:
 *            BM_BufferPool *const bm        	Stores specific information about a buffer pool
@@ -477,7 +477,7 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 
 	// Get number of pages on buffer pool
 	int numPages = bm->numPages;
-	
+
 	int i;
 	for (i = 0; i < numPages; i++)
 	{
@@ -504,7 +504,7 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 * RETURN :
 *            Type:   RC                     		Returned code:
 *            Values: RC_OK                  		block stored successfully
-* 					  RC_FILE_NOT_FOUND			Cannot find file
+* 					  RC_PAGE_NOT_FOUND			Cannot find page
 *
 * AUTHOR :
 *			 Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
@@ -522,7 +522,7 @@ RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
 	SM_FileHandle fileHandle;
 	char *fileName = bm->pageFile;
-	
+
 	int i;
 	for (i = 0; i < bm->numPages; i++)
 	{
