@@ -83,7 +83,6 @@ createDummyPages(BM_BufferPool *bm, int num)
   
   for (i = 0; i < num; i++)
     {
-      printf("Step number: %d\n", i);
       CHECK(pinPage(bm, h, i));
       sprintf(h->data, "%s-%i", "Page", h->pageNum);
       CHECK(markDirty(bm, h));

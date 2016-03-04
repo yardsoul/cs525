@@ -1,4 +1,3 @@
-
 test_assign2_1: test_assign2_1.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o
 	gcc -o testOutput test_assign2_1.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o
 

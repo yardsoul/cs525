@@ -97,7 +97,7 @@ RC openPageFile (char *fileName, SM_FileHandle *fHandle) {
 
 		// Initialize fields of file handle
 		fHandle->fileName = fileName;
-		fHandle->totalNumPages = nPages;
+		fHandle->totalNumPages = (int) size%PAGE_SIZE > 0? nPages+1:nPages;
 		fHandle->curPagePos = 0;
 		fHandle->mgmtInfo = pageFile;
 	}
@@ -213,14 +213,12 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 	//Check if page does exist
 	if (0 > pageNum || fHandle->totalNumPages < pageNum)
 	{
-		printf("FLAG1!!\n");
 		return RC_READ_NON_EXISTING_PAGE;
 	}
 	else
 	{
 		//Read and write block to memPage (Expected number of element read should be return)
 		if(fseek(fHandle->mgmtInfo, pageFirstByte, SEEK_SET) != 0) {
-			printf("FLAG2!!\n");
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 
@@ -234,9 +232,6 @@ RC readBlock (int pageNum, SM_FileHandle *fHandle, SM_PageHandle memPage) {
 		}
 		else
 		{
-			printf("FLAG3!!\n");
-			printf("%zu\n", size);
-			printf("%d\n", pageNum);
 			return RC_READ_NON_EXISTING_PAGE;
 		}
 	}
@@ -534,10 +529,13 @@ RC appendEmptyBlock (SM_FileHandle *fHandle) {
 
 	char *buffer = (char *) calloc(PAGE_SIZE, sizeof(char));
 
+	int totalNumPages = fHandle->totalNumPages;
 
 	struct stat st;
 	stat(fHandle->fileName, &st);
 	int size = st.st_size;
+
+	fseek(pageFile, PAGE_SIZE * totalNumPages, SEEK_SET);
 
 	//writes data
 	fwrite (buffer, sizeof(char), PAGE_SIZE, pageFile);
@@ -587,9 +585,10 @@ RC ensureCapacity (int numberOfPages, SM_FileHandle *fHandle) {
 	//check if the file page size is less than numberOfPages
 	if (fHandle->totalNumPages < numberOfPages) {
 		//call appendEmptyBlock to append an empty page, check again if size is still less than numberOfPages, continue appending a page until size is equal to numberOfPages
-		do {
+		while (fHandle->totalNumPages < numberOfPages){
 			appendEmptyBlock(fHandle);
-		} while (fHandle->totalNumPages < numberOfPages);
+		}
+
 		//file page size is equal to or more than numberOfPages, appending is not needed
 	}
 	return RC_OK;

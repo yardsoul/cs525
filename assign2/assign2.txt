@@ -1,0 +1,1 @@
+./Debug/buffer_mgr.c.o ./Debug/buffer_mgr_stat.c.o ./Debug/dberror.c.o ./Debug/storage_mgr.c.o ./Debug/test_assign2_1.c.o

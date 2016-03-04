@@ -24,6 +24,8 @@ typedef struct FrameInfo
 	struct FrameInfo *previousFrame;
 	// Next Frame in the Buffer Pool
 	struct FrameInfo *nextFrame;
+	//Time stamp
+	long timeStamp;
 } FrameInfo;
 
 /*
@@ -42,17 +44,16 @@ typedef struct BufferPoolInfo
 	int readNumber;
 	// Number of pages written
 	int writeNumber;
-	//number of filled frames
-	int count;
 } BufferPoolInfo;
 
+long globalTime = 0;
 /************************************************************
  *                 Replacement Strategies                   *
  ************************************************************/
 
 // FIFO
 /*******************************************************************
-* NAME :            RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
+* NAME :            RC mangeBuffer(BM_BufferPool *const bm, BM_PageHandle *const page,PageNumber pageNum)
 *
 * DESCRIPTION :     Store block in to memory using FIFO strategy
 *
@@ -77,62 +78,76 @@ typedef struct BufferPoolInfo
 *            2016-02-29    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added header comment and correction
 *
 *******************************************************************/
-RC doFifo(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
+RC manageBuffer(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber pageNum)
 {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
 	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
-	int frameCounter = 0;
-
+	int numPages = bm->numPages;
+	FrameInfo *frameWillBeUse =  &bufferPool[0];
+	
+	for(int i = 0 ; i<numPages;i++)
+	{
+		FrameInfo *frameCompare = &bufferPool[i];
+		
+		if(frameWillBeUse->timeStamp > frameCompare->timeStamp)
+		{
+			frameWillBeUse = frameCompare;
+		}
+	}
+	
+	while(frameWillBeUse->fixCount !=0)
+	{
+		if(frameWillBeUse->nextFrame != NULL)
+			frameWillBeUse = frameWillBeUse->nextFrame;
+		else
+		{
+			frameWillBeUse = buffPoolInfo->firstFrame;
+		}
+	}
 	SM_FileHandle fileHandle;
 	char *fileName = bm->pageFile;
-	
-	FrameInfo *frame = buffPoolInfo->firstFrame;
-	while(frame->fixCount != 0 )
-	{
-		frameCounter++;
-		if(frame->nextFrame==NULL)
-			return RC_READ_NON_EXISTING_PAGE;
-		frame = frame->nextFrame;
-	}
-	//If dirty write it down to disk
-	if(frame->isDirty)
+	bool *dirtyFlags = getDirtyFlags(bm);
+	int i  = frameWillBeUse->frameNumber;
+	if(*(dirtyFlags+i)==true)
 	{
 		// Open file
-			openPageFile(fileName, &fileHandle);
-			// Write page to disk
-			writeBlock(buffPoolInfo->firstFrame->pageNumber, &fileHandle, frame->frameData);
-			frame->isDirty = false;
-			// Close page file
-			closePageFile(&fileHandle);
-			buffPoolInfo->writeNumber++;
-			
+		openPageFile(fileName, &fileHandle);
+		// Write page to disk
+		RC test = writeBlock(bufferPool[i].pageNumber, &fileHandle, bufferPool[i].frameData);
+		if(test !=RC_OK)
+		{
+			return test;
+		}
+		bufferPool[i].isDirty = false;
+		buffPoolInfo->writeNumber++;
+		// Close page file
+		closePageFile(&fileHandle);
 	}
-	//Pop first frame bu shrift every frame by one
-	for (int i = frameCounter; i < bm->numPages - 1 ; i++)
-	{
-		bufferPool[i].frameData = bufferPool[i + 1].frameData;
-		bufferPool[i].pageNumber = bufferPool[i + 1].pageNumber;
-	}
+	
 	//Set last frame
 	// Open file
 	openPageFile(fileName, &fileHandle);
 
 	ensureCapacity(pageNum + 1, &fileHandle);
 	//Read page to memory
-	RC readToMem = readBlock(pageNum, &fileHandle, buffPoolInfo->lastFrame->frameData);
+	RC readToMem = readBlock(pageNum, &fileHandle, frameWillBeUse->frameData);
+	
 	// Close page file
 	closePageFile(&fileHandle);
 	if (readToMem != RC_OK)
 	{
-		printf("FLAG!!\n");
 		return readToMem;
 	}
+	frameWillBeUse->fixCount +=1;
+	frameWillBeUse->timeStamp = ++globalTime;
+	//buffPoolInfo->lastFrame->fixCount++;
 	buffPoolInfo->readNumber++;
-	buffPoolInfo->lastFrame->pageNumber = pageNum;
-	page->data = buffPoolInfo->lastFrame->frameData;
+	frameWillBeUse->pageNumber = pageNum;
+	//buffPoolInfo->lastFrame->pageNumber = pageNum;
+	strcpy(page->data,frameWillBeUse->frameData);
 	page->pageNum = pageNum;
+
 	return RC_OK;
-	//return RC_READ_NON_EXISTING_PAGE;
 
 }
 // LRU
@@ -197,7 +212,8 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 		// Set fixCount to 0 and isDirty to false, since we are initializing the buffer
 		bufferPool[i].fixCount = 0;
 		bufferPool[i].isDirty = false;
-
+		
+		bufferPool[i].timeStamp = 0;
 		// Next, fill the information for the previous and next frames for each frame
 		if (i == 0) {
 			// First frame has no previous frame
@@ -230,13 +246,14 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 	// Set number of reads and writes to 0
 	buffPoolInfo->readNumber = 0;
 	buffPoolInfo->writeNumber = 0;
+	
 
 	// Fill the  BM_BufferPool struct
 	bm->pageFile = (char *) pageFileName;
 	bm->numPages = numPages;
 	bm->strategy = strategy;
 	bm->mgmtData = buffPoolInfo;
-
+	globalTime = 0;
 	return RC_OK;
 }
 
@@ -267,9 +284,9 @@ RC initBufferPool(BM_BufferPool *const bm, const char *const pageFileName,
 RC shutdownBufferPool(BM_BufferPool *const bm) {
 	// Get number of pages to iterate
 	int numPages = bm->numPages;
-
 	// Create the BufferPoolInfo pointer and point it to the mgmt information
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
 
 	// Get the information about pinned pages and dirty pages
 	int *fixCounts = getFixCounts(bm);
@@ -282,18 +299,26 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 			// Return custom error because there are pinned files
 			free(fixCounts);
 			free(dirtyFlags);
-			printf("This page is pinned: %d\n", i);
 			return RC_PINNED_PAGES;
 		}
 	}
-
+ 
 	// Check if there are any frames with unsaved changes
 	for (int i = 0; i < numPages; i++) {
 		// If there are dirty frames, save changes by calling forceFlushPool
 		if (*(dirtyFlags + i) == true) {
-			forceFlushPool(bm);
-			// Not need to keep checking
-			break;
+			SM_FileHandle fileHandle;
+			char *fileName = bm->pageFile;
+			
+			//forceFlushPool(bm);
+			// Open file
+			openPageFile(fileName, &fileHandle);
+			// Write page to disk
+			writeBlock(bufferPool[i].pageNumber, &fileHandle, bufferPool[i].frameData);
+			//frame->isDirty = false;
+			buffPoolInfo->writeNumber++;
+			// Close page file
+			closePageFile(&fileHandle);
 		}
 	}
 
@@ -348,7 +373,6 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 	for (int i = 0; i < numPages; i++) {
 		// If dirty flag and not pinned
 		if ((*(dirtyFlags + i) == true) && (*(fixCounts + i) == 0)) {
-
 			// Load frame and page number
 			FrameInfo *frame = &(buffPoolInfo->bufferPool[i]);
 			PageNumber pageNum = frame->pageNumber;
@@ -357,6 +381,7 @@ RC forceFlushPool(BM_BufferPool *const bm) {
 			strcpy(pageHandle, frame->frameData);
 			// Open file
 			openPageFile(fileName, &fileHandle);
+			ensureCapacity(frame->pageNumber+1,&fileHandle);
 			// Write page to disk
 			writeBlock(pageNum, &fileHandle, pageHandle);
 			// Close page file
@@ -411,18 +436,17 @@ RC markDirty (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	int numPages = bm->numPages;
 	bool *dirtyFlags = getDirtyFlags(bm);
 
-	printf("numPages: %d\n", numPages);
-	printf("pageNum: %d\n", page->pageNum);
-
 	for (int i = 0; i < numPages; i++) {
 		FrameInfo *frame = &bufferPool[i];
 		if (frame->pageNumber == page->pageNum) {
+			strcpy(frame->frameData,page->data);
 			frame->isDirty = true;
 			free(dirtyFlags);
 			return RC_OK;
 		}
 
 	}
+	
 	return RC_WRITE_FAILED;
 }
 
@@ -462,13 +486,6 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 		FrameInfo *frame = &bufferPool[i];
 		if (frame->pageNumber == page->pageNum)
 		{
-			if (frame->isDirty)
-			{
-				printf("Page %d is dirty: %d\n", i, frame->isDirty);
-				forcePage(bm, page);
-				printf("Page %d is dirty: %d\n", i, frame->isDirty);
-
-			}
 			frame->fixCount--;
 			return RC_OK;
 		}
@@ -504,36 +521,25 @@ RC unpinPage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 *******************************************************************/
 RC forcePage (BM_BufferPool *const bm, BM_PageHandle *const page) {
 	BufferPoolInfo *buffPoolInfo = bm->mgmtData;
-
-	//If buffer pool exists
-	if (buffPoolInfo != NULL)
+	FrameInfo *bufferPool = buffPoolInfo->bufferPool;
+	SM_FileHandle fileHandle;
+	char *fileName = bm->pageFile;
+	for(int i = 0; i<bm->numPages;i++)
 	{
-		SM_FileHandle fileHandle;
-		char *fileName = bm->pageFile;
-
-		// Open file
-		openPageFile(fileName, &fileHandle);
-		// Write page to disk
-		writeBlock(page->pageNum, &fileHandle, page->data);
-		// Close page file
-		closePageFile(&fileHandle);
-		//Write back to disk
-		//writeBlock(page->pageNum,buffPoolInfo,page->data);
-		//Increase write time
-		buffPoolInfo->writeNumber++;
-		//Clear Dirty Flag
-		// *(page->pageNum + dirtyFlags) = false;
-		FrameInfo *bufferPool = buffPoolInfo->bufferPool;
-		FrameInfo *frame = &bufferPool[page->pageNum];
-		frame->isDirty = false;
-
-		return RC_OK;
+		if(bufferPool[i].pageNumber==page->pageNum)
+		{
+			// Open file
+			openPageFile(fileName, &fileHandle);
+			// Write page to disk
+			writeBlock(page->pageNum, &fileHandle, bufferPool[i].frameData);
+			// Close page file
+			closePageFile(&fileHandle);
+			bufferPool[i].isDirty = false;
+			buffPoolInfo->writeNumber++;
+			return RC_OK;
+		}
 	}
-	else
-	{
-
-		return RC_FILE_NOT_FOUND;
-	}
+	return RC_PAGE_NOT_FOUND;
 }
 
 //Written 2016/02/27
@@ -572,10 +578,12 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 
 			// Increase fixCount and close
 			frame->fixCount++;
-
+			if(bm->strategy == 1)
+			{
+				frame->timeStamp = ++globalTime;
+			}
 			free(frameContents);
 			return RC_OK;
-
 		}
 	}
 	for (int i = 0; i < numPages; i++) {
@@ -588,6 +596,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 
 			// Increase fixCount
 			frame->fixCount++;
+			frame->timeStamp = ++globalTime;
 			// If there's a free frame, copy page to it
 			openPageFile(fileName, &fileHandle);
 			ensureCapacity(pageNum + 1, &fileHandle);
@@ -595,7 +604,6 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			buffPoolInfo->readNumber++;
 			strcpy(page->data, frame->frameData);
 			closePageFile(&fileHandle);
-
 			free(frameContents);
 			return RC_OK;
 
@@ -603,15 +611,8 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 	}
 	free(frameContents);
 	ReplacementStrategy strategy = bm->strategy;
-	// Check for FIFO
-	if (strategy == 0) {
-		return doFifo(bm, page, pageNum);
-	}
-	// Check for LRU
-	if (strategy == 1) {
-		return RC_OK;
-		//return LRU(bm, page, pageNum);
-	}
+	// Call Manage Buffer
+	return manageBuffer(bm, page, pageNum);
 
 }
 
