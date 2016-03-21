@@ -70,7 +70,8 @@ Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *t
 }
 
 RC freeSchema (Schema *schema) {
-
+	free(schema);
+	return RC_OK;
 }
 
 
@@ -80,7 +81,8 @@ RC createRecord (Record **record, Schema *schema) {
 }
 
 RC freeRecord (Record *record) {
-
+	free(record);
+	return RC_OK;
 }
 
 RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
