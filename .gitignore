@@ -2,3 +2,4 @@
 *.o
 testOutput
 sftp-config.json
+*.zip
