@@ -1,3 +1,4 @@
+all: test_assign3_1 test_expr
 
 test_assign3_1: test_assign3_1.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o expr.o record_mgr.o rm_serializer.o
 	gcc -o testOutput test_assign3_1.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o expr.o record_mgr.o rm_serializer.o
