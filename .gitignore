@@ -1,5 +1,6 @@
 .DS_Store
 *.o
 testOutput
+test_expr_Output
 sftp-config.json
 *.zip

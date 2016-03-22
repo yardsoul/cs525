@@ -2,10 +2,12 @@
 #include "dberror.h"
 #include "storage_mgr.h"
 #include "buffer_mgr.h"
+#include <string.h>
 
 int numTuples = 0;
 int numSlots = 0;
 int slotSize = 0;
+char pageFile[100];
 
 
 RC initRecordManager (void *mgmtData) {
@@ -17,12 +19,15 @@ RC shutdownRecordManager () {
 }
 
 RC createTable (char *name, Schema *schema) {
+	strcpy(pageFile, name);
+
 	// Create the file
 	createPageFile(name);
 
 	SM_FileHandle fileHandle;
 
 	openPageFile(name, &fileHandle);
+
 
 
 	ensureCapacity(1, &fileHandle);
@@ -175,7 +180,7 @@ RC openTable (RM_TableData *rel, char *name) {
 
 
 RC closeTable (RM_TableData *rel) {
-	BM_BufferPool *bm = rel->mgmtData;
+	BM_BufferPool *bm = (BM_BufferPool *)rel->mgmtData;
 	shutdownBufferPool(bm);
 	free(rel->schema->attrNames);
 	free(rel->schema->dataTypes);
@@ -196,8 +201,7 @@ RC deleteTable (char *name) {
 }
 
 int getNumTuples (RM_TableData *rel) {
-	// int numTuples = ((rel->mgmtData)->numTuples);
-	// return numTuples;
+
 }
 
 
@@ -205,17 +209,83 @@ int getNumTuples (RM_TableData *rel) {
 
 // handling records in a table
 RC insertRecord (RM_TableData *rel, Record *record) {
-	// TODO: FINISH
-
+	// Declaring variables
+	BM_BufferPool *bm = (BM_BufferPool *) rel->mgmtData;
 	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
-	
-
+	SM_FileHandle *fileHandle;
 	PageNumber pageNum;
-	int slotNum;
+	int slotNum = 0;
+	int pageLength = 0;
 
 
+	// Get the total number of pages
+	openPageFile(pageFile, &fileHandle);
+	int totalNumPages = fileHandle->totalNumPages;
+	closePageFile(&fileHandle);
 
-	free(pageHandle);
+	int recordSize = getRecordSize(rel->schema);
+
+	pageNum = 1;
+
+	while (pageNum < totalNumPages) {
+		// Pin the current page
+		pinPage(bm, pageHandle, pageNum);
+
+		// Get the information of the file
+		char *pageData = pageHandle->data;
+
+		// Calculate the length of the page
+		pageLength = strlen(pageData);
+
+		int remainingSpace = PAGE_SIZE - pageLength;
+
+		// Check for empty slots inside the current page
+		if (recordSize < remainingSpace) {
+			slotNum = pageLength / recordSize;
+			unpinPage(bm, pageHandle);
+			break;
+		}
+
+		// Unpin the page if there is no empty slots
+		unpinPage(bm, pageHandle);
+
+		// Iterate to next page
+		pageNum++;
+	}
+
+	// If there is no space left, we append an empty block
+	if (slotNum == 0) {
+		pinPage(bm, pageHandle, pageNum + 1);
+		unpinPage(bm, pageHandle);
+	}
+
+	// Pin the resulting page to insert the record
+	pinPage(bm, pageHandle, pageNum);
+
+	// Get the pointer to the pinned page
+	char *dataPointer = pageHandle->data;
+
+	// Calculate the length of the page
+	pageLength = strlen(dataPointer);
+
+	// Create a pointer to the position where we are inserting the record
+	char *recordPointer = pageLength + dataPointer;
+
+	strcpy(recordPointer, record);
+
+	markDirty(bm, pageHandle);
+
+	unpinPage(bm, pageHandle);
+
+	// Assign struct values
+
+	RID recordID;
+
+	recordID.page = pageNum;
+	recordID.slot = slotNum;
+
+	record->id = recordID;
+
 	return RC_OK;
 }
 
