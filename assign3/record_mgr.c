@@ -61,7 +61,7 @@ Schema *deserializeSchema (char *serializedSchema) {
 	schemaResult->numAttr = atoi(tmpStr);
 
 	schemaResult->attrNames = (char **)malloc(sizeof(char*)*schemaResult->numAttr);
-	schemaResult->dataTypes = (DataType *)malloc(sizeof(DataType)*schemaResult->numAttr);
+	schemaResult->dataTypes = (DataType *)malloc(sizeof(DataType) * schemaResult->numAttr);
 	int i;
 	for (i = 0; i < schemaResult->numAttr; i++)
 	{
@@ -269,7 +269,7 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 	// Create a pointer to the position where we are inserting the record
 	char *recordPointer = pageLength + dataPointer;
 
-	strcpy(recordPointer, record);
+	strcpy(recordPointer, record->data);
 
 	markDirty(bm, pageHandle);
 
@@ -288,15 +288,70 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 }
 
 RC deleteRecord (RM_TableData *rel, RID id) {
-
+	return RC_OK;
 }
 
 RC updateRecord (RM_TableData *rel, Record *record) {
+	// Declaring variables
+	BM_BufferPool *bm = (BM_BufferPool *) rel->mgmtData;
+	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
+	PageNumber pageNum;
+	RID recordID;
+	int slotNum;
 
+	// Retrieve record information
+	recordID = id;
+	pageNum = recordID.page;
+	slotNum = recordID.slot;	
+
+	// Get the size of the record to be updated
+	int recordSize = getRecordSize(rel->schema);
+
+	// Pin the corresponding page and get the data
+	pinPage(bm, pageHandle, pageNum);
+	char *dataPointer = pageHandle->data;
+
+	// Define the pointer where the record will be updated
+	char *recordPointer = recordSize * slotNum + dataPointer;
+
+	// Copy the updated record in the position
+	strcpy(recordPointer, record->data);
+
+	markDirty(bm, pageHandle);
+
+	unpinPage(bm, pageHandle);
+
+	return RC_OK;
 }
 
 RC getRecord (RM_TableData *rel, RID id, Record *record) {
+	// Declaring variables
+	BM_BufferPool *bm = (BM_BufferPool *) rel->mgmtData;
+	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
+	PageNumber pageNum;
+	RID recordID;
+	int slotNum;
 
+	// Retrieve record information
+	recordID = id;
+	pageNum = recordID.page;
+	slotNum = recordID.slot;	
+
+	// Get the size of the record to be updated
+	int recordSize = getRecordSize(rel->schema);
+
+	// Pin the corresponding page and get the data
+	pinPage(bm, pageHandle, pageNum);
+	char *dataPointer = pageHandle->data;
+
+	// Define the pointer of the record to be read
+	char *recordPointer = recordSize * slotNum + dataPointer;
+
+	strcpy(recordPointer, record->data);
+	
+	unpinPage(bm, pageHandle);
+
+	return RC_OK;
 }
 
 
