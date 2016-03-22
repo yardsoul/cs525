@@ -216,6 +216,8 @@ int getNumTuples (RM_TableData *rel) {
 
 // handling records in a table
 RC insertRecord (RM_TableData *rel, Record *record) {
+	// TODO: FINISH
+
 	BM_PageHandle pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
 	TableInfo *tInfo = (TableInfo *) rel->mgmtData;
 
