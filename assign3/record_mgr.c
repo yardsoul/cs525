@@ -199,7 +199,33 @@ RC deleteTable (char *name) {
 }
 
 int getNumTuples (RM_TableData *rel) {
-
+	BM_BufferPool *bm = (BM_BufferPool *) rel->mgmtData;
+	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
+	SM_FileHandle *fileHandle;
+	openPageFile(pageFile, &fileHandle);
+	
+	//Start with block#1 (#0 is a table schema)
+	int blockNum = 1;
+	int totalNumPages = fileHandle->totalNumPages;
+	int totalRecord;
+	
+	while(blockNum < fileHandle->totalNumPages)
+	{
+		//Pin the page and count
+		pinPage(bm, pageHandle, blockNum);
+		
+		int i;
+		for(i=0;i<PAGE_SIZE;i++)
+		{
+			if(pageHandle->data[i]=='|')
+				totalRecord++;
+		}
+		unpinPage(bm, pageHandle);
+		//Read next block
+		blockNum++;
+	}
+	
+	return totalRecord;
 }
 
 
