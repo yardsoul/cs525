@@ -2,6 +2,8 @@
 #include "dberror.h"
 #include "storage_mgr.h"
 #include "buffer_mgr.h"
+#include <stdlib.h>
+#include <string.h>
 
 int numTuples = 0;
 int numSlots = 0;
@@ -43,30 +45,23 @@ RC createTable (char *name, Schema *schema) {
 	return RC_OK;
 }
 
-int deserializeTypeLength(char *target) {
-	char* tmp[strlen(target)];
-	strcpy(tmp, target);
-	char *token = strtok(tmp, "[");
-	token = strtok(NULL, "]");
-	return atoi(token);
-}
-
 Schema *deserializeSchema (char *serializedSchema) {
-	Schema *schemaResult = (Schema *) malloc (sizeof(Schema));
-	char* schemaData[strlen(serializedSchema)];
+	Schema *schemaResult = (Schema *)malloc(sizeof(Schema));
+	char schemaData[strlen(serializedSchema)];
+	char* tokenPointer;
 	strcpy(schemaData, serializedSchema);
 
 	//Get first integer (numAttr)
-	char *tmpStr = strtok(schemaData, "<");
-	tmpStr = strtok(NULL, ">");
+	char *tmpStr = strtok_r(schemaData, "<", &tokenPointer);
+	tmpStr = strtok_r(NULL, ">", &tokenPointer);
 	schemaResult->numAttr = atoi(tmpStr);
 
 	schemaResult->attrNames = (char **)malloc(sizeof(char*)*schemaResult->numAttr);
-	schemaResult->dataTypes = (DataType *)malloc(sizeof(DataType) * schemaResult->numAttr);
+	schemaResult->dataTypes = (DataType *)malloc(sizeof(DataType)*schemaResult->numAttr);
 	int i;
 	for (i = 0; i < schemaResult->numAttr; i++)
 	{
-		tmpStr = strtok(NULL, ": ");
+		tmpStr = strtok_r(NULL, ": ", &tokenPointer);
 		//Put attrName into schema
 		schemaResult->attrNames[i] = (char *)calloc(strlen(tmpStr), sizeof(char));
 		strcpy(schemaResult->attrNames[i], tmpStr);
@@ -76,12 +71,12 @@ Schema *deserializeSchema (char *serializedSchema) {
 		if (i == (schemaResult->numAttr) - 1)
 		{
 			//Cut the ) out
-			tmpStr = strtok(NULL, ") ");
+			tmpStr = strtok_r(NULL, ") ", &tokenPointer);
 		}
 		else
 		{
 			//If it not the last one go to next attr
-			tmpStr = strtok(NULL, ", ");
+			tmpStr = strtok_r(NULL, ", ", &tokenPointer);
 		}
 
 		if (strcmp(tmpStr, "INT") == 0)
@@ -103,17 +98,21 @@ Schema *deserializeSchema (char *serializedSchema) {
 		{
 			//It is String
 			schemaResult->dataTypes[i] = DT_STRING;
-			schemaResult->typeLength[i] = deserializeTypeLength(tmpStr);
+			char *tokenPointer2;
+			char *token = strtok_r(tmpStr, "[", &tokenPointer2);
+			token = strtok_r(NULL, "]", &tokenPointer2);
+			schemaResult->typeLength[i] = atoi(token);
 		}
 	}
 	//Check for key
 	int keySize = 0;
 	char* keyAttr[schemaResult->numAttr];
-	tmpStr = strtok(NULL, "(");
+	tmpStr = strtok_r(NULL, "(", &tokenPointer);
 	if (tmpStr != NULL) {
-		tmpStr = strtok(NULL, ")");
+		tmpStr = strtok_r(NULL, ")", &tokenPointer);
+		char *tokenPointer2;
 		//Inside key()
-		char *tmpKey = strtok(tmpStr, ", ");
+		char *tmpKey = strtok_r(tmpStr, ", ", &tokenPointer2);
 		//There is only one key
 		if (tmpKey == NULL)
 		{
@@ -127,7 +126,7 @@ Schema *deserializeSchema (char *serializedSchema) {
 				keyAttr[keySize] = (char *)malloc(strlen(tmpKey) * sizeof(char));
 				strcpy(keyAttr[keySize], tmpKey);
 				keySize++;
-				tmpKey = strtok(NULL, ", ");
+				tmpKey = strtok_r(NULL, ", ", &tokenPointer2);
 			}
 		}
 	}
