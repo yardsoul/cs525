@@ -201,15 +201,15 @@ RC deleteTable (char *name) {
 int getNumTuples (RM_TableData *rel) {
 	BM_BufferPool *bm = (BM_BufferPool *) rel->mgmtData;
 	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
-	SM_FileHandle *fileHandle;
+	SM_FileHandle fileHandle;
 	openPageFile(pageFile, &fileHandle);
 
 	//Start with block#1 (#0 is a table schema)
 	int blockNum = 1;
-	int totalNumPages = fileHandle->totalNumPages;
+	int totalNumPages = fileHandle.totalNumPages;
 	int totalRecord = 0;
 
-	while (blockNum < fileHandle->totalNumPages)
+	while (blockNum < fileHandle.totalNumPages)
 	{
 		//Pin the page and count
 		pinPage(bm, pageHandle, blockNum);
@@ -236,7 +236,7 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 	// Declaring variables
 	BM_BufferPool *bm = (BM_BufferPool *) rel->mgmtData;
 	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
-	SM_FileHandle *fileHandle;
+	SM_FileHandle fileHandle;
 	PageNumber pageNum;
 	int slotNum = 0;
 	int pageLength = 0;
@@ -244,7 +244,7 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 
 	// Get the total number of pages
 	openPageFile(pageFile, &fileHandle);
-	int totalNumPages = fileHandle->totalNumPages;
+	int totalNumPages = fileHandle.totalNumPages;
 	closePageFile(&fileHandle);
 
 	int recordSize = getRecordSize(rel->schema);
