@@ -1,6 +1,7 @@
 #include "record_mgr.h"
 #include "dberror.h"
 #include "storage_mgr.h"
+#include "buffer_mgr.h"
 
 typedef struct TableInfo {
 	int numTuples;
@@ -54,6 +55,113 @@ RC createTable (char *name, Schema *schema) {
 	// scanf("%d", t);
 	return RC_OK;
 }
+int deserializeTypeLength(char *target){
+	char* tmp[strlen(target)];
+	strcpy(tmp,target);
+	char *token = strtok(tmp,"[");
+	token = strtok(NULL,"]");
+	return atoi(token);
+}
+Schema *deserializeSchema (char *serializedSchema) {
+	Schema *schemaResult = (Schema *) malloc (sizeof(Schema));
+	char* schemaData[strlen(serializedSchema)];
+	strcpy(schemaData,serializedSchema);
+	
+	//Get first integer (numAttr)
+	char *tmpStr = strtok(schemaData,"<");
+	tmpStr = strtok(NULL,">");
+	schemaResult->numAttr = atoi(tmpStr);
+	
+	schemaResult->attrNames=(char **)malloc(sizeof(char*)*schemaResult->numAttr);
+	schemaResult->dataTypes=(DataType *)malloc(sizeof(DataType)*schemaResult->numAttr);
+	int i;
+	for(i=0;i < schemaResult->numAttr; i++)
+	{
+		tmpStr = strtok(NULL,": ");
+		//Put attrName into schema
+		schemaResult->attrNames[i]=(char *)calloc(strlen(tmpStr), sizeof(char));
+		strcpy(schemaResult->attrNames[i],tmpStr);
+		
+		//Get data type
+		//If it is a last attr
+		if(i == (schemaResult->numAttr)-1)
+		{
+			//Cut the ) out
+			tmpStr = strtok(NULL,") ");
+		}
+		else
+		{
+			//If it not the last one go to next attr
+			tmpStr = strtok(NULL,", ");
+		}
+		
+		if(strcmp(tmpStr,"INT")==0)
+		{
+			schemaResult->dataTypes[i] = DT_INT;
+            schemaResult->typeLength[i] = 0;
+		}
+		else if(strcmp(tmpStr,"FLOAT")==0)
+		{
+			schemaResult->dataTypes[i] = DT_FLOAT;
+            schemaResult->typeLength[i] = 0;
+		}
+		else if(strcmp(tmpStr,"BOOL")==0)
+		{
+			schemaResult->dataTypes[i] = DT_BOOL;
+            schemaResult->typeLength[i] = 0;
+		}
+		else
+		{
+			//It is String
+			schemaResult->dataTypes[i] = DT_STRING;
+            schemaResult->typeLength[i] = deserializeTypeLength(tmpStr);
+		}
+	}
+	//Check for key
+	int keySize = 0;
+	char* keyAttr[schemaResult->numAttr];
+	tmpStr = strtok(NULL,"(");
+	if(tmpStr!=NULL){
+		tmpStr = strtok(NULL,")");
+		//Inside key()
+		char *tmpKey = strtok(tmpStr,", ");
+		//There is only one key
+		if(tmpKey == NULL)
+		{
+			keyAttr[keySize] = (char *)malloc(strlen(tmpStr)*sizeof(char));
+			strcpy(keyAttr[keySize], tmpStr);
+			keySize++;
+		}
+		else{
+			while(tmpKey!=NULL)
+			{
+				keyAttr[keySize] = (char *)malloc(strlen(tmpKey)*sizeof(char));
+				strcpy(keyAttr[keySize], tmpKey);
+				keySize++;
+				tmpKey = strtok(NULL,", ");
+			}
+		}
+	}
+	if(keySize>0){
+		schemaResult->keyAttrs = (int *)malloc(sizeof(int)*keySize);
+		schemaResult->keySize = keySize;
+		int j;
+		for(j=0;j<keySize;j++)
+		{
+			int z;
+			for(z=0;z<schemaResult->numAttr;z++)
+			{
+				if(strcmp(schemaResult->attrNames[z],keyAttr[j])==0)
+				{
+					schemaResult->keyAttrs[j] = z;
+				}
+			}
+		}
+	}
+	
+	return schemaResult;
+}
+
 
 RC openTable (RM_TableData *rel, char *name) {
 	BM_BufferPool *bm = (BM_BufferPool *) malloc (sizeof(BM_BufferPool));
@@ -66,14 +174,6 @@ RC openTable (RM_TableData *rel, char *name) {
 	char *serializedSchema = pageHandle->data;
 	Schema *deserializedSchema = deserializeSchema(serializedSchema);
 
-	// pinPage(bm, pageHandle, 1);
-
-	// TableInfo *tInfo;
-	// char *serializedTableInfo = pageHandle->data;
-	// tInfo = deserializeTableInfo(serializedTableInfo);
-
-	// tInfo->bm = bm;
-
 	rel->name = name;
 	rel->schema = deserializedSchema;
 	rel->mgmtData = bm;
@@ -83,8 +183,6 @@ RC openTable (RM_TableData *rel, char *name) {
 	return RC_OK;
 
 }
-
-
 
 
 RC closeTable (RM_TableData *rel) {
