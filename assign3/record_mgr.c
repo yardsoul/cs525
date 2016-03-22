@@ -83,23 +83,23 @@ Schema *deserializeSchema (char *serializedSchema) {
 		if(strcmp(tmpStr,"INT")==0)
 		{
 			schemaResult->dataTypes[i] = DT_INT;
-            schemaResult->typeLength[i] = 0;
+			schemaResult->typeLength[i] = 0;
 		}
 		else if(strcmp(tmpStr,"FLOAT")==0)
 		{
 			schemaResult->dataTypes[i] = DT_FLOAT;
-            schemaResult->typeLength[i] = 0;
+			schemaResult->typeLength[i] = 0;
 		}
 		else if(strcmp(tmpStr,"BOOL")==0)
 		{
 			schemaResult->dataTypes[i] = DT_BOOL;
-            schemaResult->typeLength[i] = 0;
+			schemaResult->typeLength[i] = 0;
 		}
 		else
 		{
 			//It is String
 			schemaResult->dataTypes[i] = DT_STRING;
-            schemaResult->typeLength[i] = deserializeTypeLength(tmpStr);
+			schemaResult->typeLength[i] = deserializeTypeLength(tmpStr);
 		}
 	}
 	//Check for key
@@ -171,7 +171,7 @@ RC openTable (RM_TableData *rel, char *name) {
 
 
 RC closeTable (RM_TableData *rel) {
-	BM_BufferPool *bm = ((rel->mgmtData)->bm);
+	BM_BufferPool *bm = rel->mgmtData;
 	shutdownBufferPool(bm);
 	free(rel->schema->attrNames);
 	free(rel->schema->dataTypes);
@@ -203,9 +203,8 @@ int getNumTuples (RM_TableData *rel) {
 RC insertRecord (RM_TableData *rel, Record *record) {
 	// TODO: FINISH
 
-	BM_PageHandle pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
-	TableInfo *tInfo = (TableInfo *) rel->mgmtData;
-
+	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
+	
 	PageNumber pageNum;
 	int slotNum;
 
