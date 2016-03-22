@@ -203,28 +203,28 @@ int getNumTuples (RM_TableData *rel) {
 	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
 	SM_FileHandle *fileHandle;
 	openPageFile(pageFile, &fileHandle);
-	
+
 	//Start with block#1 (#0 is a table schema)
 	int blockNum = 1;
 	int totalNumPages = fileHandle->totalNumPages;
-	int totalRecord;
-	
-	while(blockNum < fileHandle->totalNumPages)
+	int totalRecord = 0;
+
+	while (blockNum < fileHandle->totalNumPages)
 	{
 		//Pin the page and count
 		pinPage(bm, pageHandle, blockNum);
-		
+
 		int i;
-		for(i=0;i<PAGE_SIZE;i++)
+		for (i = 0; i < PAGE_SIZE; i++)
 		{
-			if(pageHandle->data[i]=='|')
+			if (pageHandle->data[i] == '|')
 				totalRecord++;
 		}
 		unpinPage(bm, pageHandle);
 		//Read next block
 		blockNum++;
 	}
-	
+
 	return totalRecord;
 }
 
@@ -328,7 +328,7 @@ RC updateRecord (RM_TableData *rel, Record *record) {
 	// Retrieve record information
 	recordID = id;
 	pageNum = recordID.page;
-	slotNum = recordID.slot;	
+	slotNum = recordID.slot;
 
 	// Get the size of the record to be updated
 	int recordSize = getRecordSize(rel->schema);
@@ -361,7 +361,7 @@ RC getRecord (RM_TableData *rel, RID id, Record *record) {
 	// Retrieve record information
 	recordID = id;
 	pageNum = recordID.page;
-	slotNum = recordID.slot;	
+	slotNum = recordID.slot;
 
 	// Get the size of the record to be updated
 	int recordSize = getRecordSize(rel->schema);
@@ -374,7 +374,7 @@ RC getRecord (RM_TableData *rel, RID id, Record *record) {
 	char *recordPointer = recordSize * slotNum + dataPointer;
 
 	strcpy(recordPointer, record->data);
-	
+
 	unpinPage(bm, pageHandle);
 
 	return RC_OK;
