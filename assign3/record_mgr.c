@@ -326,7 +326,7 @@ RC updateRecord (RM_TableData *rel, Record *record) {
 	int slotNum;
 
 	// Retrieve record information
-	recordID = id;
+	recordID = record->id;
 	pageNum = recordID.page;
 	slotNum = recordID.slot;
 
