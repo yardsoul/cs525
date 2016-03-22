@@ -3,21 +3,6 @@
 #include "storage_mgr.h"
 #include "buffer_mgr.h"
 
-typedef struct TableInfo {
-	int numTuples;
-	BM_BufferPool *bm;
-} TableInfo;
-
-
-Schema *deserializeSchema (char *serializedSchema) {
-
-}
-
-// TableInfo *deserializeTableInfo (char *serializedTableInfo) {
-// 	TableInfo * tInfo = (TableInfo *) malloc (sizeof(TableInfo));
-
-// 	return tInfo;
-// }
 
 RC initRecordManager (void *mgmtData) {
 	return RC_OK;
