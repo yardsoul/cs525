@@ -2,13 +2,22 @@
 #include "dberror.h"
 #include "storage_mgr.h"
 #include "buffer_mgr.h"
+#include "expr.h"
 #include <stdlib.h>
 #include <string.h>
 
-int numTuples = 0;
-int numSlots = 0;
-int slotSize = 0;
+
 char pageFile[100];
+
+typedef struct ScanInfo
+{
+	int currentPage;
+	int currentSlot;
+	int totalNumPages;
+	int totalNumSlots;
+	Expr *condition;
+} ScanInfo;
+
 
 
 RC initRecordManager (void *mgmtData) {
@@ -383,15 +392,70 @@ RC getRecord (RM_TableData *rel, RID id, Record *record) {
 
 // scans
 RC startScan (RM_TableData *rel, RM_ScanHandle *scan, Expr *cond) {
-	
+	// Declaring variables
+	SM_FileHandle fileHandle;
+	ScanInfo *scanInfo = (ScanInfo *) malloc (sizeof(ScanInfo));
+
+	// Get the total number of pages
+	openPageFile(pageFile, &fileHandle);
+	int totalNumPages = fileHandle.totalNumPages;
+	closePageFile(&fileHandle);
+
+	int recordSize = getRecordSize(rel->schema);
+	int totalNumSlots = PAGE_SIZE / recordSize;
+
+	// Fill in the Scan Information
+	scanInfo->currentSlot = 0;
+	scanInfo->currentPage = 1;
+	scanInfo->totalNumPages = totalNumPages;
+	scanInfo->totalNumSlots = totalNumSlots;
+	scanInfo->condition = cond;
+
+	scan->rel = rel;
+	scan->mgmtData = scanInfo;
+
+	return RC_OK;
 }
 
 RC next (RM_ScanHandle *scan, Record *record) {
+	// Declaring variables
+	ScanInfo *scanInfo;
+	Value *value;
 
+	scanInfo = scan->mgmtData;
+
+
+
+	// Fill in the Record Information
+	record->id.page = scanInfo->currentPage;
+	record->id.slot = scanInfo->currentSlot;
+
+	getRecord(scan->rel, record->id, record);
+
+	if (currentPage == (scanInfo->totalNumPages) - 1  && currentSlot == (scanInfo->totalNumSlots) - 1) {
+		return RC_RM_NO_MORE_TUPLES;
+	}
+
+	evalExpr(record, scan->rel->schema, scanInfo->condition, &value);
+	if (scanInfo->currentSlot != scanInfo->totalNumSlots) {
+		(scanInfo->currentSlot)++;
+	} else {
+		scanInfo->currentSlot = 0;
+		(scanInfo->currentPage)++;
+	}
+
+	scan->mgmtData = scanInfo;
+
+	if (value->v.boolV == 1) {
+		return RC_OK;
+	} else {
+		return next(scan, record);
+	}
 }
 
 RC closeScan (RM_ScanHandle *scan) {
-
+	free(scan);
+	return RC_OK;
 }
 
 
@@ -461,70 +525,70 @@ RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
 }
 
 RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
-	int offset=0;
+	int offset = 0;
 	int i;
 	//Offset for extra space charactor
-	offset += attrNum+1;
-	
+	offset += attrNum + 1;
+
 	//Offset for data
-	for(i=0;i<attrNum;i++){
-		if(schema->dataTypes[i] == DT_INT)
+	for (i = 0; i < attrNum; i++) {
+		if (schema->dataTypes[i] == DT_INT)
 		{
 			offset += sizeof(int);
 		}
-		else if(schema->dataTypes[i] == DT_FLOAT)
+		else if (schema->dataTypes[i] == DT_FLOAT)
 		{
 			offset += sizeof(float);
 		}
-		else if(schema->dataTypes[i] == DT_BOOL)
+		else if (schema->dataTypes[i] == DT_BOOL)
 		{
 			offset += sizeof(bool);
 		}
-		else if(schema->dataTypes[i] == DT_STRING)
+		else if (schema->dataTypes[i] == DT_STRING)
 		{
 			offset += schema->typeLength[i];
 		}
 	}
 	char *output = record->data;
 	//Attr is the first one
-	if(attrNum==0){
+	if (attrNum == 0) {
 		output[0] = '|';
 		output++;
 	}
-	else{
+	else {
 		output += offset;
-		(output-1)[0] = ',';
+		(output - 1)[0] = ',';
 	}
-	
-	if(value->dt == DT_INT){
-		sprintf(output,"%d",value->v.intV);
-		while(strlen(output)!=sizeof(int)){
-			strcat(output,"0");
+
+	if (value->dt == DT_INT) {
+		sprintf(output, "%d", value->v.intV);
+		while (strlen(output) != sizeof(int)) {
+			strcat(output, "0");
 		}
-		int j,k;
-		for(j=0,k=strlen(output)-1;j<k;j++,k--){
+		int j, k;
+		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
 			int tmp = output[j];
 			output[j] = output[k];
 			output[k] = tmp;
 		}
 	}
-	else if(value->dt == DT_FLOAT){
-		sprintf(output,"%f",value->v.floatV);
-		while(strlen(output)!=sizeof(float)){
-			strcat(output,"0");
+	else if (value->dt == DT_FLOAT) {
+		sprintf(output, "%f", value->v.floatV);
+		while (strlen(output) != sizeof(float)) {
+			strcat(output, "0");
 		}
-		int j,k;
-		for(j=0,k=strlen(output)-1;j<k;j++,k--){
+		int j, k;
+		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
 			int tmp = output[j];
 			output[j] = output[k];
 			output[k] = tmp;
 		}
 	}
-	else if(value->dt == DT_BOOL){
-		sprintf(output,"%i",value->v.boolV);
+	else if (value->dt == DT_BOOL) {
+		sprintf(output, "%i", value->v.boolV);
 	}
-	else if(value->dt == DT_STRING){
-		sprintf(output,"%s",value->v.stringV);
+	else if (value->dt == DT_STRING) {
+		sprintf(output, "%s", value->v.stringV);
 	}
 	return RC_OK;
 }
