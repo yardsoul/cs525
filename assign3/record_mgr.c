@@ -461,5 +461,70 @@ RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
 }
 
 RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
-
+	int offset=0;
+	int i;
+	//Offset for extra space charactor
+	offset += attrNum+1;
+	
+	//Offset for data
+	for(i=0;i<attrNum;i++){
+		if(schema->dataTypes == DT_INT)
+		{
+			offset += sizeof(int);
+		}
+		else if(schema->dataTypes == DT_FLOAT)
+		{
+			offset += sizeof(float);
+		}
+		else if(schema->dataTypes == DT_BOOL)
+		{
+			offset += sizeof(bool);
+		}
+		else if(schema->dataTypes == DT_STRING)
+		{
+			offset += schema->typeLength[i];
+		}
+	}
+	char *output = record->data;
+	//Attr is the first one
+	if(attrNum==0){
+		output[0] = '|';
+		output++;
+	}
+	else{
+		output += offset;
+		(output-1)[0] = ',';
+	}
+	
+	if(schema->dataTypes == DT_INT){
+		sprintf(output,"%d",value->v.intV)
+		while(strlen(output)!=sizeof(int)){
+			strcat(output,"0");
+		}
+		int j,k;
+		for(j=0,k=strlen(output)-1;j<k;j++,k--){
+			int tmp = output[j];
+			output[j] = output[k];
+			output[k] = tmp;
+		}
+	}
+	else if(schema->dataTypes == DT_FLOAT){
+		sprintf(output,"%f",value->v.floatV)
+		while(strlen(output)!=sizeof(float)){
+			strcat(output,"0");
+		}
+		int j,k;
+		for(j=0,k=strlen(output)-1;j<k;j++,k--){
+			int tmp = output[j];
+			output[j] = output[k];
+			output[k] = tmp;
+		}
+	}
+	else if(schema->dataTypes == DT_BOOL){
+		sprintf(output,"%i",value->v.boolV);
+	}
+	else if(schema->dataTypes == DT_STRING){
+		sprintf(output,"%s",value->v.stringV);
+	}
+	return RC_OK;
 }
