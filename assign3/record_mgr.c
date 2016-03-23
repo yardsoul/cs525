@@ -432,7 +432,7 @@ RC next (RM_ScanHandle *scan, Record *record) {
 
 	getRecord(scan->rel, record->id, record);
 
-	if (currentPage == (scanInfo->totalNumPages) - 1  && currentSlot == (scanInfo->totalNumSlots) - 1) {
+	if (scanInfo->currentPage == (scanInfo->totalNumPages) - 1  && scanInfo->currentSlot == (scanInfo->totalNumSlots) - 1) {
 		return RC_RM_NO_MORE_TUPLES;
 	}
 
