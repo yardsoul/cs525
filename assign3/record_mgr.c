@@ -468,19 +468,19 @@ RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
 	
 	//Offset for data
 	for(i=0;i<attrNum;i++){
-		if(schema->dataTypes == DT_INT)
+		if(schema->dataTypes[i] == DT_INT)
 		{
 			offset += sizeof(int);
 		}
-		else if(schema->dataTypes == DT_FLOAT)
+		else if(schema->dataTypes[i] == DT_FLOAT)
 		{
 			offset += sizeof(float);
 		}
-		else if(schema->dataTypes == DT_BOOL)
+		else if(schema->dataTypes[i] == DT_BOOL)
 		{
 			offset += sizeof(bool);
 		}
-		else if(schema->dataTypes == DT_STRING)
+		else if(schema->dataTypes[i] == DT_STRING)
 		{
 			offset += schema->typeLength[i];
 		}
@@ -496,8 +496,8 @@ RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
 		(output-1)[0] = ',';
 	}
 	
-	if(schema->dataTypes == DT_INT){
-		sprintf(output,"%d",value->v.intV)
+	if(value->dt == DT_INT){
+		sprintf(output,"%d",value->v.intV);
 		while(strlen(output)!=sizeof(int)){
 			strcat(output,"0");
 		}
@@ -508,8 +508,8 @@ RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
 			output[k] = tmp;
 		}
 	}
-	else if(schema->dataTypes == DT_FLOAT){
-		sprintf(output,"%f",value->v.floatV)
+	else if(value->dt == DT_FLOAT){
+		sprintf(output,"%f",value->v.floatV);
 		while(strlen(output)!=sizeof(float)){
 			strcat(output,"0");
 		}
@@ -520,10 +520,10 @@ RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
 			output[k] = tmp;
 		}
 	}
-	else if(schema->dataTypes == DT_BOOL){
+	else if(value->dt == DT_BOOL){
 		sprintf(output,"%i",value->v.boolV);
 	}
-	else if(schema->dataTypes == DT_STRING){
+	else if(value->dt == DT_STRING){
 		sprintf(output,"%s",value->v.stringV);
 	}
 	return RC_OK;
