@@ -383,7 +383,7 @@ RC getRecord (RM_TableData *rel, RID id, Record *record) {
 
 // scans
 RC startScan (RM_TableData *rel, RM_ScanHandle *scan, Expr *cond) {
-
+	
 }
 
 RC next (RM_ScanHandle *scan, Record *record) {
