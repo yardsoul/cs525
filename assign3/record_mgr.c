@@ -447,7 +447,11 @@ RC freeSchema (Schema *schema) {
 
 // dealing with records and attribute values
 RC createRecord (Record **record, Schema *schema) {
-
+	int size = getRecordSize(schema);
+	Record *r = (Record*) malloc (sizeof(Record));
+	r->data = (char*) calloc(size,sizeof(char));
+	*record = r;
+	return RC_OK;
 }
 
 RC freeRecord (Record *record) {
@@ -457,7 +461,36 @@ RC freeRecord (Record *record) {
 }
 
 RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
-
+	Value *val = (Value*)malloc(sizeof(Value));
+	int offset = getRecordSize(schema);
+	offset += attrNum+1;
+	char *output;
+	if(schema->dataTypes[attrNum] == DT_INT){
+		output = (char *)calloc(sizeof(int)+1,sizeof(char));
+		strcpy(output,record->data+offset);
+		val->dt = DT_INT;
+		val->v.intV = atoi(output);
+	}
+	else if(schema->dataTypes[attrNum] == DT_FLOAT){
+		output = (char *)calloc(sizeof(float)+1,sizeof(char));
+		strcpy(output,record->data+offset);
+		val->dt = DT_FLOAT;
+		val->v.floatV = (float) *output;
+	}
+	else if(schema->dataTypes[attrNum] == DT_BOOL){
+		output = (char *)calloc(sizeof(bool)+1,sizeof(char));
+		strcpy(output,record->data+offset);
+		val->dt = DT_BOOL;
+		val->v.boolV = (bool) *output;
+	}
+	else if(schema->dataTypes[attrNum] == DT_STRING){
+		output = (char *)calloc(schema->typeLength[attrNum],sizeof(char));
+		strcpy(output,record->data+offset);
+		val->dt = DT_STRING;
+		val->v.stringV = output;
+	}
+	*value = val;
+	return RC_OK;
 }
 
 RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
