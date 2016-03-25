@@ -323,7 +323,17 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 }
 
 RC deleteRecord (RM_TableData *rel, RID id) {
-	return RC_OK;
+	int slotNum=id.slot;
+  
+  	BM_BufferPool *bm=(BM_BufferPool *)rel->mgmtData;
+  	BM_PageHandle *pageHandle=(BM_PageHandle *) malloc (sizeof(BM_PageHandle)); 
+  	PageNumber pageNum=id.page; 
+     
+  	pinPage(bm,pageHandle,pageNum);
+  	markDirty(bm,pageHandle);
+  	unpinPage(bm,pageHandle);
+ 	free(pageHandle);
+  	return RC_OK;
 }
 
 RC updateRecord (RM_TableData *rel, Record *record) {
