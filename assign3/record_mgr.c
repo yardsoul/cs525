@@ -8,6 +8,7 @@
 
 
 char pageFile[100];
+static Schema globalSchema;
 
 typedef struct ScanInfo
 {
@@ -55,6 +56,7 @@ RC createTable (char *name, Schema *schema) {
 	closePageFile(&fileHandle);
 	// int t;
 	// scanf("%d", t);
+	globalSchema=*schema;
 	return RC_OK;
 }
 
@@ -174,7 +176,7 @@ RC openTable (RM_TableData *rel, char *name) {
 
 	char *serializedSchema = pageHandle->data;
 	Schema *deserializedSchema = deserializeSchema(serializedSchema);
-
+	*deserializedSchema=globalSchema;
 	rel->name = name;
 	rel->schema = deserializedSchema;
 	rel->mgmtData = bm;
