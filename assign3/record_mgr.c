@@ -53,6 +53,7 @@ RC createTable (char *name, Schema *schema) {
 
 
 	closePageFile(&fileHandle);
+
 	return RC_OK;
 }
 
@@ -178,7 +179,7 @@ RC openTable (RM_TableData *rel, char *name) {
 	char *serializedSchema = pageHandle->data;
 	printf("berfor deserialize\n");
 	Schema *deserializedSchema = deserializeSchema(serializedSchema);
-	printf("before set rel\n");
+
 	rel->name = name;
 	rel->schema = deserializedSchema;
 	rel->mgmtData = bm;
@@ -331,7 +332,8 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 }
 
 RC deleteRecord (RM_TableData *rel, RID id) {
-	return RC_OK;
+	
+  	return RC_OK;
 }
 
 RC updateRecord (RM_TableData *rel, Record *record) {
