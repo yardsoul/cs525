@@ -386,7 +386,7 @@ testInsertManyRecords(void)
       realInserts[i] = inserts[i%10];
       realInserts[i].a = i;
       r = fromTestRecord(schema, realInserts[i]);
-      TEST_CHECK(insertRecord(table,r)); 
+      TEST_CHECK(insertRecord(table,r));
       rids[i] = r->id;
     }
   TEST_CHECK(closeTable(table));

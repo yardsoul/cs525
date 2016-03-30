@@ -53,8 +53,6 @@ RC createTable (char *name, Schema *schema) {
 
 
 	closePageFile(&fileHandle);
-	// int t;
-	// scanf("%d", t);
 	return RC_OK;
 }
 
@@ -68,17 +66,18 @@ Schema *deserializeSchema (char *serializedSchema) {
 	char *tmpStr = strtok_r(schemaData, "<", &tokenPointer);
 	tmpStr = strtok_r(NULL, ">", &tokenPointer);
 	schemaResult->numAttr = atoi(tmpStr);
-
+	
 	schemaResult->attrNames = (char **)malloc(sizeof(char*)*schemaResult->numAttr);
 	schemaResult->dataTypes = (DataType *)malloc(sizeof(DataType) * schemaResult->numAttr);
+	schemaResult->typeLength = (int *)malloc(sizeof(int)*schemaResult->numAttr);
 	int i;
+	tmpStr = strtok_r(NULL, "(", &tokenPointer);
 	for (i = 0; i < schemaResult->numAttr; i++)
 	{
 		tmpStr = strtok_r(NULL, ": ", &tokenPointer);
 		//Put attrName into schema
 		schemaResult->attrNames[i] = (char *)calloc(strlen(tmpStr), sizeof(char));
 		strcpy(schemaResult->attrNames[i], tmpStr);
-
 		//Get data type
 		//If it is a last attr
 		if (i == (schemaResult->numAttr) - 1)
@@ -91,21 +90,24 @@ Schema *deserializeSchema (char *serializedSchema) {
 			//If it not the last one go to next attr
 			tmpStr = strtok_r(NULL, ", ", &tokenPointer);
 		}
-
 		if (strcmp(tmpStr, "INT") == 0)
 		{
+			
 			schemaResult->dataTypes[i] = DT_INT;
 			schemaResult->typeLength[i] = 0;
+			
 		}
 		else if (strcmp(tmpStr, "FLOAT") == 0)
 		{
 			schemaResult->dataTypes[i] = DT_FLOAT;
 			schemaResult->typeLength[i] = 0;
+			
 		}
 		else if (strcmp(tmpStr, "BOOL") == 0)
 		{
 			schemaResult->dataTypes[i] = DT_BOOL;
 			schemaResult->typeLength[i] = 0;
+			
 		}
 		else
 		{
@@ -115,6 +117,7 @@ Schema *deserializeSchema (char *serializedSchema) {
 			char *token = strtok_r(tmpStr, "[", &tokenPointer2);
 			token = strtok_r(NULL, "]", &tokenPointer2);
 			schemaResult->typeLength[i] = atoi(token);
+			
 		}
 	}
 	//Check for key
@@ -167,18 +170,19 @@ Schema *deserializeSchema (char *serializedSchema) {
 RC openTable (RM_TableData *rel, char *name) {
 	BM_BufferPool *bm = (BM_BufferPool *) malloc (sizeof(BM_BufferPool));
 	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
-
+	printf("open start\n");
 	initBufferPool(bm, name, 3, RS_FIFO, NULL);
-
+	printf("after initBuffer\n");
 	pinPage(bm, pageHandle, 0);
-
+	printf("after pin %s\n",pageHandle->data);
 	char *serializedSchema = pageHandle->data;
+	printf("berfor deserialize\n");
 	Schema *deserializedSchema = deserializeSchema(serializedSchema);
-
+	printf("before set rel\n");
 	rel->name = name;
 	rel->schema = deserializedSchema;
 	rel->mgmtData = bm;
-
+	printf("after set rel\n");
 	free(pageHandle);
 
 	return RC_OK;
@@ -256,19 +260,22 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 	int totalNumPages = fileHandle.totalNumPages;
 	closePageFile(&fileHandle);
 
-	int recordSize = getRecordSize(rel->schema);
+	int recordSize = getRecordSize(rel->schema) + 3; // Because of separators
 
 	pageNum = 1;
 
 	while (pageNum < totalNumPages) {
 		// Pin the current page
+
 		pinPage(bm, pageHandle, pageNum);
+
 
 		// Get the information of the file
 		char *pageData = pageHandle->data;
 
 		// Calculate the length of the page
 		pageLength = strlen(pageData);
+		//printf("pageLength: %d\n", pageLength);
 
 		int remainingSpace = PAGE_SIZE - pageLength;
 
@@ -287,10 +294,10 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 	}
 
 	// If there is no space left, we append an empty block
-	if (slotNum == 0) {
-		pinPage(bm, pageHandle, pageNum + 1);
-		unpinPage(bm, pageHandle);
-	}
+	// if (slotNum == 0) {
+	// 	pinPage(bm, pageHandle, pageNum);
+	// 	unpinPage(bm, pageHandle);
+	// }
 
 	// Pin the resulting page to insert the record
 	pinPage(bm, pageHandle, pageNum);
@@ -303,6 +310,7 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 
 	// Create a pointer to the position where we are inserting the record
 	char *recordPointer = pageLength + dataPointer;
+
 
 	strcpy(recordPointer, record->data);
 
