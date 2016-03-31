@@ -56,6 +56,7 @@ Milestone
 2016-03-21	Initialization of methods
 2016-03-30	Compiled code
 2016-03-31  Fixed all bugs and test passed OK
+2016-03-31	Code tested on fourier server
 	
 
 
@@ -67,6 +68,8 @@ The team has provided a Makefile to make the installation easier.
 To install the program, simply run the command 'make' in the folder where all the files are stored. This command will create a series of compiled .o files, and a single file called 'testOutput'. This file contains the compiled test case.
 
 To run the program, execute './testOutput' in the folder where it is stored. This will automatically run the desired tests.
+
+In addition, there is another test file provided. To execute it, simply run ./test_expr_Output.
 
 Finally, in order to clean the directory, execute 'make clean', which will delete all .o files, all .bin files and testOutput file as well.
 
@@ -153,7 +156,7 @@ DESCRIPTION: Set specific attribute from record.
 
 Additional error codes: of all additional error codes
 ------------------------------------------------------
-
+RC_TABLE_NOT_FOUND 402	Error produced when we cannot find a table on disk
 
 Data structure: main data structure used
 -----------------------------------------
