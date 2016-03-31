@@ -5,3 +5,7 @@ test_expr_Output
 sftp-config.json
 *.zip
 test_assign3_1.c
+.clang
+.codelite
+assign3final.project
+assign3final.workspace
