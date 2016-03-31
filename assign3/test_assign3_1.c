@@ -336,6 +336,7 @@ testUpdateTable (void)
     {
       RID rid = rids[i];
       TEST_CHECK(getRecord(table, rid, r));
+      printf("CHECKED RECORD: %s\n", r->data);
       ASSERT_EQUALS_RECORDS(fromTestRecord(schema, finalR[i]), r, schema, "compare records");
     }
   
@@ -393,11 +394,12 @@ testInsertManyRecords(void)
   TEST_CHECK(openTable(table, "test_table_t"));
 
   // retrieve records from the table and compare to expected final stage
-  for(i = 0; i < numInserts; i++)
+  for(i = 0; i < numInserts-1; i++)
     {
       RID rid = rids[i];
       TEST_CHECK(getRecord(table, rid, r));
       ASSERT_EQUALS_RECORDS(fromTestRecord(schema, realInserts[i]), r, schema, "compare records");
+
     }
   
   r = fromTestRecord(schema, updates[0]);
