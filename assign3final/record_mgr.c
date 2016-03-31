@@ -471,7 +471,7 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 	pageNum = 1;
 
 	// Iterate through the pages on the file
-	while (pageNum < totalNumPages) {
+	while (totalNumPages > pageNum) {
 		// Pin the current page and get its data
 		pinPage(bm, pageHandle, pageNum);
 		char *pageData = pageHandle->data;
