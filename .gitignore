@@ -4,3 +4,4 @@ testOutput
 test_expr_Output
 sftp-config.json
 *.zip
+test_assign3_1.c
