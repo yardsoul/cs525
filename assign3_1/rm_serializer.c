@@ -121,20 +121,20 @@ serializeSchema(Schema *schema)
     {
       APPEND(result,"%s%s: ", (i != 0) ? ", ": "", schema->attrNames[i]);
       switch (schema->dataTypes[i])
-		{
-		case DT_INT:
-		  APPEND_STRING(result, "INT");
-		  break;
-		case DT_FLOAT:
-		  APPEND_STRING(result, "FLOAT");
-		  break;
-		case DT_STRING:
-		  APPEND(result,"STRING[%i]", schema->typeLength[i]);
-		  break;
-		case DT_BOOL:
-		  APPEND_STRING(result,"BOOL");
-		  break;
-		}
+	{
+	case DT_INT:
+	  APPEND_STRING(result, "INT");
+	  break;
+	case DT_FLOAT:
+	  APPEND_STRING(result, "FLOAT");
+	  break;
+	case DT_STRING:
+	  APPEND(result,"STRING[%i]", schema->typeLength[i]);
+	  break;
+	case DT_BOOL:
+	  APPEND_STRING(result,"BOOL");
+	  break;
+	}
     }
   APPEND_STRING(result,")");
 

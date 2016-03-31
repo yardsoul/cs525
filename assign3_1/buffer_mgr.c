@@ -97,7 +97,6 @@ RC manageBuffer(BM_BufferPool *const bm, BM_PageHandle *const page, PageNumber p
 			frameWillBeUse = frameCompare;
 		}
 	}
-
 	while (frameWillBeUse->fixCount != 0)
 	{
 		if (frameWillBeUse->nextFrame != NULL)
@@ -313,6 +312,7 @@ RC shutdownBufferPool(BM_BufferPool *const bm) {
 			buffPoolInfo->writeNumber++;
 			// Close page file
 			closePageFile(&fileHandle);
+
 		}
 	}
 
@@ -627,7 +627,7 @@ RC pinPage (BM_BufferPool *const bm, BM_PageHandle *const page,
 			frame->timeStamp = ++globalTime;
 			// If there's a free frame, copy page to it
 			openPageFile(fileName, &fileHandle);
-			ensureCapacity(pageNum , &fileHandle);
+			ensureCapacity(pageNum + 1, &fileHandle);
 			readBlock(pageNum, &fileHandle, frame->frameData);
 			buffPoolInfo->readNumber++;
 			strcpy(page->data, frame->frameData);

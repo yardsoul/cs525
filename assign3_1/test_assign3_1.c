@@ -105,6 +105,7 @@ testRecords (void)
   r = fromTestRecord(schema, expected[0]);
 
   getAttr(r, schema, 0, &value);
+  printf("value : %d\n",value->v.intV);
   OP_TRUE(stringToValue("i1"), value, valueEquals, "first attr");
   freeVal(value);
 
@@ -161,7 +162,6 @@ testCreateTableAndInsert (void)
       TEST_CHECK(insertRecord(table,r)); 
       rids[i] = r->id;
     }
-
   TEST_CHECK(closeTable(table));
   TEST_CHECK(openTable(table, "test_table_r"));
 
@@ -376,32 +376,29 @@ testInsertManyRecords(void)
   schema = testSchema();
   rids = (RID *) malloc(sizeof(RID) * numInserts);
   
-  printf("222\n");
   TEST_CHECK(initRecordManager(NULL));
-  printf("333\n");
   TEST_CHECK(createTable("test_table_t",schema));
-  printf("444\n");
   TEST_CHECK(openTable(table, "test_table_t"));
-  printf("after open table\n");
+  
   // insert rows into table
   for(i = 0; i < numInserts; i++)
     {
       realInserts[i] = inserts[i%10];
       realInserts[i].a = i;
       r = fromTestRecord(schema, realInserts[i]);
-      TEST_CHECK(insertRecord(table,r)); 
+      TEST_CHECK(insertRecord(table,r));
       rids[i] = r->id;
     }
-	printf("555\n");
   TEST_CHECK(closeTable(table));
-  printf("666\n");
   TEST_CHECK(openTable(table, "test_table_t"));
-printf("77\n");
+
   // retrieve records from the table and compare to expected final stage
   for(i = 0; i < numInserts; i++)
     {
+		printf("step: %d\n",i);
       RID rid = rids[i];
       TEST_CHECK(getRecord(table, rid, r));
+	  printf("%s\n",r->data);
       ASSERT_EQUALS_RECORDS(fromTestRecord(schema, realInserts[i]), r, schema, "compare records");
     }
   
@@ -410,7 +407,6 @@ printf("77\n");
   TEST_CHECK(updateRecord(table,r));
   TEST_CHECK(getRecord(table, rids[randomRec], r)); 
   ASSERT_EQUALS_RECORDS(fromTestRecord(schema, updates[0]), r, schema, "compare records");
-   
   TEST_CHECK(closeTable(table));
   TEST_CHECK(deleteTable("test_table_t"));
   TEST_CHECK(shutdownRecordManager());
@@ -674,5 +670,6 @@ testRecord(Schema *schema, int a, char *b, int c)
   MAKE_VALUE(value, DT_INT, c);
   TEST_CHECK(setAttr(result, schema, 2, value));
   freeVal(value);
+
   return result;
 }

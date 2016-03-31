@@ -184,7 +184,7 @@ RC openTable (RM_TableData *rel, char *name) {
 	rel->mgmtData = bm;
 	printf("after set rel\n");
 	free(pageHandle);
-
+	unpinPage(bm,pageHandle);
 	return RC_OK;
 
 }
@@ -294,10 +294,10 @@ RC insertRecord (RM_TableData *rel, Record *record) {
 	}
 
 	// If there is no space left, we append an empty block
-	// if (slotNum == 0) {
-	// 	pinPage(bm, pageHandle, pageNum);
-	// 	unpinPage(bm, pageHandle);
-	// }
+//	 if (slotNum == 0) {
+//	 	pinPage(bm, pageHandle, pageNum);
+//	 	unpinPage(bm, pageHandle);
+//	 }
 
 	// Pin the resulting page to insert the record
 	pinPage(bm, pageHandle, pageNum);
@@ -348,7 +348,7 @@ RC updateRecord (RM_TableData *rel, Record *record) {
 	slotNum = recordID.slot;
 
 	// Get the size of the record to be updated
-	int recordSize = getRecordSize(rel->schema);
+	int recordSize = getRecordSize(rel->schema)+3;
 
 	// Pin the corresponding page and get the data
 	pinPage(bm, pageHandle, pageNum);
@@ -358,7 +358,7 @@ RC updateRecord (RM_TableData *rel, Record *record) {
 	char *recordPointer = recordSize * slotNum + dataPointer;
 
 	// Copy the updated record in the position
-	strcpy(recordPointer, record->data);
+	strncpy(recordPointer, record->data,recordSize);
 
 	markDirty(bm, pageHandle);
 
@@ -381,7 +381,7 @@ RC getRecord (RM_TableData *rel, RID id, Record *record) {
 	slotNum = recordID.slot;
 
 	// Get the size of the record to be updated
-	int recordSize = getRecordSize(rel->schema);
+	int recordSize = getRecordSize(rel->schema)+3;
 
 	// Pin the corresponding page and get the data
 	pinPage(bm, pageHandle, pageNum);
@@ -390,7 +390,7 @@ RC getRecord (RM_TableData *rel, RID id, Record *record) {
 	// Define the pointer of the record to be read
 	char *recordPointer = recordSize * slotNum + dataPointer;
 
-	strcpy(recordPointer, record->data);
+	strncpy(record->data,recordPointer,recordSize);
 
 	unpinPage(bm, pageHandle);
 
@@ -462,7 +462,6 @@ RC next (RM_ScanHandle *scan, Record *record) {
 }
 
 RC closeScan (RM_ScanHandle *scan) {
-	free(scan);
 	return RC_OK;
 }
 
@@ -470,13 +469,14 @@ RC closeScan (RM_ScanHandle *scan) {
 // dealing with schemas
 int getRecordSize (Schema *schema) {
 	int size = 0;
-	int temp = 0;
+	
 	int i;
 
 	DataType *dataTypes = schema->dataTypes;
 	int numAttr = schema->numAttr;
 
 	for (i = 0; i < numAttr; i++) {
+		int temp = 0;
 		switch (dataTypes[i]) {
 		case DT_INT:
 			temp += sizeof(int);
@@ -494,8 +494,8 @@ int getRecordSize (Schema *schema) {
 			break;
 		}
 		size += temp;
-
 	}
+		
 	return size;
 }
 
@@ -534,30 +534,45 @@ RC freeRecord (Record *record) {
 
 RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
 	Value *val = (Value*)malloc(sizeof(Value));
-	int offset = getRecordSize(schema);
+	int offset =  0;
+	int i;
+	for(i = 0; i< attrNum;i++){
+		if(schema->dataTypes[i] == DT_INT){
+			offset += sizeof(int);
+		}
+		else if(schema->dataTypes[i] == DT_FLOAT){
+			offset += sizeof(float);
+		}
+		else if(schema->dataTypes[i] == DT_BOOL){
+			offset += sizeof(bool);
+		}
+		else if(schema->dataTypes[i] == DT_STRING){
+			offset += schema->typeLength[i];
+		}
+	}
 	offset += attrNum+1;
 	char *output;
 	if(schema->dataTypes[attrNum] == DT_INT){
-		output = (char *)calloc(sizeof(int)+1,sizeof(char));
+		output = (char *)calloc(sizeof(int),sizeof(char));
 		strcpy(output,record->data+offset);
 		val->dt = DT_INT;
 		val->v.intV = atoi(output);
 	}
 	else if(schema->dataTypes[attrNum] == DT_FLOAT){
-		output = (char *)calloc(sizeof(float)+1,sizeof(char));
+		output = (char *)calloc(sizeof(float),sizeof(char));
 		strcpy(output,record->data+offset);
 		val->dt = DT_FLOAT;
 		val->v.floatV = (float) *output;
 	}
 	else if(schema->dataTypes[attrNum] == DT_BOOL){
-		output = (char *)calloc(sizeof(bool)+1,sizeof(char));
+		output = (char *)calloc(sizeof(bool),sizeof(char));
 		strcpy(output,record->data+offset);
 		val->dt = DT_BOOL;
 		val->v.boolV = (bool) *output;
 	}
 	else if(schema->dataTypes[attrNum] == DT_STRING){
 		output = (char *)calloc(schema->typeLength[attrNum],sizeof(char));
-		strcpy(output,record->data+offset);
+		strncpy(output,record->data+offset,schema->typeLength[attrNum]);
 		val->dt = DT_STRING;
 		val->v.stringV = output;
 	}
@@ -602,28 +617,28 @@ RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
 	}
 
 	if (value->dt == DT_INT) {
-		sprintf(output, "%d", value->v.intV);
-		while (strlen(output) != sizeof(int)) {
-			strcat(output, "0");
-		}
-		int j, k;
-		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
-			int tmp = output[j];
-			output[j] = output[k];
-			output[k] = tmp;
-		}
+		sprintf(output, "%04d", value->v.intV);
+//		while (strlen(output) != sizeof(int)) {
+//			strcat(output, "0");
+//		}
+//		int j, k;
+//		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
+//			int tmp = output[j];
+//			output[j] = output[k];
+//			output[k] = tmp;
+//		}
 	}
 	else if (value->dt == DT_FLOAT) {
-		sprintf(output, "%f", value->v.floatV);
-		while (strlen(output) != sizeof(float)) {
-			strcat(output, "0");
-		}
-		int j, k;
-		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
-			int tmp = output[j];
-			output[j] = output[k];
-			output[k] = tmp;
-		}
+		sprintf(output, "%04f", value->v.floatV);
+//		while (strlen(output) != sizeof(float)) {
+//			strcat(output, "0");
+//		}
+//		int j, k;
+//		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
+//			int tmp = output[j];
+//			output[j] = output[k];
+//			output[k] = tmp;
+//		}
 	}
 	else if (value->dt == DT_BOOL) {
 		sprintf(output, "%i", value->v.boolV);

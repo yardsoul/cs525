@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="assign2" InternalType="">
+<CodeLite_Project Name="assign3_1" InternalType="">
   <Description/>
   <Dependencies/>
   <Settings Type="Executable">
@@ -21,7 +21,7 @@
         <LibraryPath Value="Debug"/>
       </Linker>
       <ResourceCompiler Options="" Required="no"/>
-      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="./Debug" PauseExecWhenProcTerminates="no" IsGUIProgram="no" IsEnabled="yes"/>
+      <General OutputFile="$(IntermediateDirectory)/$(ProjectName)" IntermediateDirectory="./Debug" Command="./$(ProjectName)" CommandArguments="" UseSeparateDebugArgs="no" DebugArguments="" WorkingDirectory="./Debug" PauseExecWhenProcTerminates="yes" IsGUIProgram="no" IsEnabled="yes"/>
       <Environment EnvVarSetName="&lt;Use Workspace Settings&gt;" DbgSetName="&lt;Use Global Settings&gt;">
         <![CDATA[]]>
       </Environment>
@@ -54,7 +54,7 @@
       </Completion>
     </Configuration>
   </Settings>
-  <VirtualDirectory Name="assign2">
+  <VirtualDirectory Name="assign3_1">
     <File Name="buffer_mgr.c"/>
     <File Name="buffer_mgr.h"/>
     <File Name="buffer_mgr_stat.c"/>
@@ -62,29 +62,16 @@
     <File Name="dberror.c"/>
     <File Name="dberror.h"/>
     <File Name="dt.h"/>
+    <File Name="expr.c"/>
+    <File Name="expr.h"/>
+    <File Name="record_mgr.c"/>
+    <File Name="record_mgr.h"/>
+    <File Name="rm_serializer.c"/>
     <File Name="storage_mgr.c"/>
     <File Name="storage_mgr.h"/>
-    <File Name="test_assign2_1.c"/>
+    <File Name="tables.h"/>
+    <File Name="test_assign3_1.c"/>
+    <File Name="test_expr.c"/>
     <File Name="test_helper.h"/>
-  </VirtualDirectory>
-  <VirtualDirectory Name="assign3">
-    <File Name="../assign3/buffer_mgr.c"/>
-    <File Name="../assign3/buffer_mgr.h"/>
-    <File Name="../assign3/buffer_mgr_stat.c"/>
-    <File Name="../assign3/buffer_mgr_stat.h"/>
-    <File Name="../assign3/dberror.c"/>
-    <File Name="../assign3/dberror.h"/>
-    <File Name="../assign3/dt.h"/>
-    <File Name="../assign3/expr.c"/>
-    <File Name="../assign3/expr.h"/>
-    <File Name="../assign3/record_mgr.c"/>
-    <File Name="../assign3/record_mgr.h"/>
-    <File Name="../assign3/rm_serializer.c"/>
-    <File Name="../assign3/storage_mgr.c"/>
-    <File Name="../assign3/storage_mgr.h"/>
-    <File Name="../assign3/tables.h"/>
-    <File Name="../assign3/test_assign3_1.c"/>
-    <File Name="../assign3/test_expr.c"/>
-    <File Name="../assign3/test_helper.h"/>
   </VirtualDirectory>
 </CodeLite_Project>

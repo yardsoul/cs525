@@ -13,7 +13,7 @@ CurrentFileName        :=
 CurrentFilePath        :=
 CurrentFileFullPath    :=
 User                   :=Patipat Duangchalomnin
-Date                   :=02/03/2016
+Date                   :=21/03/2016
 CodeLitePath           :="/Users/Patipat/Library/Application Support/codelite"
 LinkerName             :=/usr/bin/clang++
 SharedObjectLinkerName :=/usr/bin/clang++ -dynamiclib -fPIC
@@ -60,7 +60,8 @@ AS       := /usr/bin/as
 ## User defined environment variables
 ##
 CodeLiteDir:=/Users/Patipat/Downloads/codelite.app/Contents/SharedSupport/
-Objects0=$(IntermediateDirectory)/buffer_mgr.c$(ObjectSuffix) $(IntermediateDirectory)/buffer_mgr_stat.c$(ObjectSuffix) $(IntermediateDirectory)/dberror.c$(ObjectSuffix) $(IntermediateDirectory)/storage_mgr.c$(ObjectSuffix) $(IntermediateDirectory)/test_assign2_1.c$(ObjectSuffix) 
+Objects0=$(IntermediateDirectory)/buffer_mgr.c$(ObjectSuffix) $(IntermediateDirectory)/buffer_mgr_stat.c$(ObjectSuffix) $(IntermediateDirectory)/dberror.c$(ObjectSuffix) $(IntermediateDirectory)/storage_mgr.c$(ObjectSuffix) $(IntermediateDirectory)/test_assign2_1.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_buffer_mgr.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_dberror.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_expr.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_record_mgr.c$(ObjectSuffix) \
+	$(IntermediateDirectory)/assign3_rm_serializer.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_storage_mgr.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_test_assign3_1.c$(ObjectSuffix) $(IntermediateDirectory)/assign3_test_expr.c$(ObjectSuffix) 
 
 
 
@@ -130,6 +131,78 @@ $(IntermediateDirectory)/test_assign2_1.c$(DependSuffix): test_assign2_1.c
 
 $(IntermediateDirectory)/test_assign2_1.c$(PreprocessSuffix): test_assign2_1.c
 	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/test_assign2_1.c$(PreprocessSuffix) "test_assign2_1.c"
+
+$(IntermediateDirectory)/assign3_buffer_mgr.c$(ObjectSuffix): ../assign3/buffer_mgr.c $(IntermediateDirectory)/assign3_buffer_mgr.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/buffer_mgr.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_buffer_mgr.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_buffer_mgr.c$(DependSuffix): ../assign3/buffer_mgr.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_buffer_mgr.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_buffer_mgr.c$(DependSuffix) -MM "../assign3/buffer_mgr.c"
+
+$(IntermediateDirectory)/assign3_buffer_mgr.c$(PreprocessSuffix): ../assign3/buffer_mgr.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_buffer_mgr.c$(PreprocessSuffix) "../assign3/buffer_mgr.c"
+
+$(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(ObjectSuffix): ../assign3/buffer_mgr_stat.c $(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/buffer_mgr_stat.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(DependSuffix): ../assign3/buffer_mgr_stat.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(DependSuffix) -MM "../assign3/buffer_mgr_stat.c"
+
+$(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(PreprocessSuffix): ../assign3/buffer_mgr_stat.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_buffer_mgr_stat.c$(PreprocessSuffix) "../assign3/buffer_mgr_stat.c"
+
+$(IntermediateDirectory)/assign3_dberror.c$(ObjectSuffix): ../assign3/dberror.c $(IntermediateDirectory)/assign3_dberror.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/dberror.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_dberror.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_dberror.c$(DependSuffix): ../assign3/dberror.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_dberror.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_dberror.c$(DependSuffix) -MM "../assign3/dberror.c"
+
+$(IntermediateDirectory)/assign3_dberror.c$(PreprocessSuffix): ../assign3/dberror.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_dberror.c$(PreprocessSuffix) "../assign3/dberror.c"
+
+$(IntermediateDirectory)/assign3_expr.c$(ObjectSuffix): ../assign3/expr.c $(IntermediateDirectory)/assign3_expr.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/expr.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_expr.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_expr.c$(DependSuffix): ../assign3/expr.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_expr.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_expr.c$(DependSuffix) -MM "../assign3/expr.c"
+
+$(IntermediateDirectory)/assign3_expr.c$(PreprocessSuffix): ../assign3/expr.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_expr.c$(PreprocessSuffix) "../assign3/expr.c"
+
+$(IntermediateDirectory)/assign3_record_mgr.c$(ObjectSuffix): ../assign3/record_mgr.c $(IntermediateDirectory)/assign3_record_mgr.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/record_mgr.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_record_mgr.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_record_mgr.c$(DependSuffix): ../assign3/record_mgr.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_record_mgr.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_record_mgr.c$(DependSuffix) -MM "../assign3/record_mgr.c"
+
+$(IntermediateDirectory)/assign3_record_mgr.c$(PreprocessSuffix): ../assign3/record_mgr.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_record_mgr.c$(PreprocessSuffix) "../assign3/record_mgr.c"
+
+$(IntermediateDirectory)/assign3_rm_serializer.c$(ObjectSuffix): ../assign3/rm_serializer.c $(IntermediateDirectory)/assign3_rm_serializer.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/rm_serializer.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_rm_serializer.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_rm_serializer.c$(DependSuffix): ../assign3/rm_serializer.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_rm_serializer.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_rm_serializer.c$(DependSuffix) -MM "../assign3/rm_serializer.c"
+
+$(IntermediateDirectory)/assign3_rm_serializer.c$(PreprocessSuffix): ../assign3/rm_serializer.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_rm_serializer.c$(PreprocessSuffix) "../assign3/rm_serializer.c"
+
+$(IntermediateDirectory)/assign3_storage_mgr.c$(ObjectSuffix): ../assign3/storage_mgr.c $(IntermediateDirectory)/assign3_storage_mgr.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/storage_mgr.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_storage_mgr.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_storage_mgr.c$(DependSuffix): ../assign3/storage_mgr.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_storage_mgr.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_storage_mgr.c$(DependSuffix) -MM "../assign3/storage_mgr.c"
+
+$(IntermediateDirectory)/assign3_storage_mgr.c$(PreprocessSuffix): ../assign3/storage_mgr.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_storage_mgr.c$(PreprocessSuffix) "../assign3/storage_mgr.c"
+
+$(IntermediateDirectory)/assign3_test_assign3_1.c$(ObjectSuffix): ../assign3/test_assign3_1.c $(IntermediateDirectory)/assign3_test_assign3_1.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/test_assign3_1.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_test_assign3_1.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_test_assign3_1.c$(DependSuffix): ../assign3/test_assign3_1.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_test_assign3_1.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_test_assign3_1.c$(DependSuffix) -MM "../assign3/test_assign3_1.c"
+
+$(IntermediateDirectory)/assign3_test_assign3_1.c$(PreprocessSuffix): ../assign3/test_assign3_1.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_test_assign3_1.c$(PreprocessSuffix) "../assign3/test_assign3_1.c"
+
+$(IntermediateDirectory)/assign3_test_expr.c$(ObjectSuffix): ../assign3/test_expr.c $(IntermediateDirectory)/assign3_test_expr.c$(DependSuffix)
+	$(CC) $(SourceSwitch) "/Users/Patipat/Documents/CS525/cs525/assign3/test_expr.c" $(CFLAGS) $(ObjectSwitch)$(IntermediateDirectory)/assign3_test_expr.c$(ObjectSuffix) $(IncludePath)
+$(IntermediateDirectory)/assign3_test_expr.c$(DependSuffix): ../assign3/test_expr.c
+	@$(CC) $(CFLAGS) $(IncludePath) -MG -MP -MT$(IntermediateDirectory)/assign3_test_expr.c$(ObjectSuffix) -MF$(IntermediateDirectory)/assign3_test_expr.c$(DependSuffix) -MM "../assign3/test_expr.c"
+
+$(IntermediateDirectory)/assign3_test_expr.c$(PreprocessSuffix): ../assign3/test_expr.c
+	$(CC) $(CFLAGS) $(IncludePath) $(PreprocessOnlySwitch) $(OutputSwitch) $(IntermediateDirectory)/assign3_test_expr.c$(PreprocessSuffix) "../assign3/test_expr.c"
 
 
 -include $(IntermediateDirectory)/*$(DependSuffix)
