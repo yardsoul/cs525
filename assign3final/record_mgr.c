@@ -419,7 +419,8 @@ int getNumTuples (RM_TableData *rel) {
 		//Read next block
 		blockNum++;
 	}
-
+	
+	closePageFile(&fileHandle);
 	return totalRecord;
 }
 
