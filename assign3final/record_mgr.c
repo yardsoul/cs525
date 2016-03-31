@@ -125,6 +125,29 @@ RC createTable (char *name, Schema *schema) {
 	return RC_OK;
 }
 
+
+/*******************************************************************
+* NAME :            Schema *deserializeSchema (char *serializedSchema) 
+*
+* DESCRIPTION :     Deserialize schema into variable
+*
+* PARAMETERS:
+*            	char *serializedSchema				String of serialized schema that needed to be deserialize
+*
+* RETURN :
+*            	Type:   Schema                   	Schema that is deserialized from string.
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-21	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-03-23	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Bug fixed
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 Schema *deserializeSchema (char *serializedSchema) {
 	Schema *schemaResult = (Schema *)malloc(sizeof(Schema));
 	char schemaData[strlen(serializedSchema)];
@@ -349,6 +372,28 @@ RC deleteTable (char *name) {
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            int getNumTuple (RM_TableData *rel)
+*
+* DESCRIPTION :     Get number of tuples
+*
+* PARAMETERS:
+*            	RM_TableData *rel 				Struct that the clients use to interact with the table
+*
+* RETURN :
+*            	Type:   int                   	Number of tuples
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-23	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
+
 int getNumTuples (RM_TableData *rel) {
 	BM_BufferPool *bm = (BM_BufferPool *) rel->mgmtData;
 	BM_PageHandle *pageHandle = (BM_PageHandle *) malloc (sizeof(BM_PageHandle));
@@ -357,7 +402,6 @@ int getNumTuples (RM_TableData *rel) {
 
 	//Start with block#1 (#0 is a table schema)
 	int blockNum = 1;
-	int totalNumPages = fileHandle.totalNumPages;
 	int totalRecord = 0;
 
 	while (blockNum < fileHandle.totalNumPages)
@@ -819,6 +863,34 @@ int getRecordSize (Schema *schema) {
 	return size;
 }
 
+/*******************************************************************
+* NAME :            Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int keySize, int *keys)
+*
+* DESCRIPTION :     Create a schema and fill schema with assigned parameter
+*
+* PARAMETERS:
+*            	int numAttr 				Number of attribute
+*            	char **attrNames			Pointer of attribute name
+*            	DataType *dataTypes		Data type of its column
+*            	int *typeLength			Length data
+*            	int keySize					Size of key
+*            	int *keys					Pointer to keys
+* 
+*
+* RETURN :
+*            	Type:   Schema                   	Created schema
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-21	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
+
 Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int keySize, int *keys) {
 	Schema *schema = (Schema*) malloc (sizeof(Schema));
 
@@ -831,12 +903,59 @@ Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *t
 	return schema;
 }
 
+
+/*******************************************************************
+* NAME :            RC freeSchema (Schema *schema)
+*
+* DESCRIPTION :     free the memory of given schema
+*
+* PARAMETERS:
+*            	Schema *schema 				Schema wanted to be free
+* 
+*
+* RETURN :
+*            	Type:   RC                   	Return Code:
+* 				Values: RC_OK                  Schema free successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-21	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC freeSchema (Schema *schema) {
 	free(schema);
 	return RC_OK;
 }
 
-
+/*******************************************************************
+* NAME :            RC createRecord (Record **record, Schema *schema) 
+*
+* DESCRIPTION :     create record
+*
+* PARAMETERS:
+*            	Record **record			Pointer to a record
+* 				Schema *schema				Schema of the record
+* 
+*
+* RETURN :
+*            	Type:   RC                   	Return Code:
+* 				Values: RC_OK                  Record create successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-21	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 // dealing with records and attribute values
 RC createRecord (Record **record, Schema *schema) {
 	int size = getRecordSize(schema);
@@ -846,12 +965,62 @@ RC createRecord (Record **record, Schema *schema) {
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC freeRecord (Record *record)
+*
+* DESCRIPTION :     free the memory of given revcord
+*
+* PARAMETERS:
+*            	Record *record 				Record wanted to be free
+* 
+*
+* RETURN :
+*            	Type:   RC                   	Return Code:
+* 				Values: RC_OK                  record free successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-21	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC freeRecord (Record *record) {
 	free(record->data);
 	free(record);
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC getAttr (Record *record, Schema *schema, int attrNum, Value **value)
+*
+* DESCRIPTION :     get specific attribute from record
+*
+* PARAMETERS:
+*            	Record *record 				Record wanted to be read
+* 				Schema *schema					Schema of the record
+* 				int attrNum						Position of the attribute needed to be read
+* 				Value **value					Output
+* 
+*
+* RETURN :
+*            	Type:   RC                   	Return Code:
+* 				Values: RC_OK                  Read atrribute successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-23	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-03-30	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Fixed Bugs
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
 	Value *val = (Value*)malloc(sizeof(Value));
 	int offset =  0;
@@ -870,7 +1039,7 @@ RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
 			offset += schema->typeLength[i];
 		}
 	}
-	offset += attrNum + 1;
+	offset += attrNum + 1; // Separator Charactor
 	char *output;
 	if (schema->dataTypes[attrNum] == DT_INT) {
 		output = (char *)calloc(sizeof(int), sizeof(char));
@@ -900,6 +1069,33 @@ RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC setAttr (Record *record, Schema *schema, int attrNum, Value *value)
+*
+* DESCRIPTION :     set specific attribute from record
+*
+* PARAMETERS:
+*            	Record *record 				Record wanted to be set
+* 				Schema *schema					Schema of the record
+* 				int attrNum						Position of the attribute needed to be set
+* 				Value *value					value address needed to be set
+* 
+*
+* RETURN :
+*            	Type:   RC                   	Return Code:
+* 				Values: RC_OK                  Set atrribute successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-03-23	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-03-30	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Fixed Bugs
+*            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
 	int offset = 0;
 	int i;
@@ -938,27 +1134,9 @@ RC setAttr (Record *record, Schema *schema, int attrNum, Value *value) {
 
 	if (value->dt == DT_INT) {
 		sprintf(output, "%04d", value->v.intV);
-//		while (strlen(output) != sizeof(int)) {
-//			strcat(output, "0");
-//		}
-//		int j, k;
-//		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
-//			int tmp = output[j];
-//			output[j] = output[k];
-//			output[k] = tmp;
-//		}
 	}
 	else if (value->dt == DT_FLOAT) {
 		sprintf(output, "%04f", value->v.floatV);
-//		while (strlen(output) != sizeof(float)) {
-//			strcat(output, "0");
-//		}
-//		int j, k;
-//		for (j = 0, k = strlen(output) - 1; j < k; j++, k--) {
-//			int tmp = output[j];
-//			output[j] = output[k];
-//			output[k] = tmp;
-//		}
 	}
 	else if (value->dt == DT_BOOL) {
 		sprintf(output, "%i", value->v.boolV);
