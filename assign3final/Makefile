@@ -34,4 +34,4 @@ rm_serializer.o: rm_serializer.c
 	gcc -c rm_serializer.c
 
 clean: 
-	rm testOutput test_expr_Output *.o *.bin test_table_*
+	rm testOutput test_expr_Output *.o *.bin
