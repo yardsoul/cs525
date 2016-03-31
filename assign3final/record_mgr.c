@@ -373,7 +373,7 @@ RC deleteTable (char *name) {
 }
 
 /*******************************************************************
-* NAME :            int getNumTuple (RM_TableData *rel)
+* NAME :            int getNumTuples (RM_TableData *rel)
 *
 * DESCRIPTION :     Get number of tuples
 *
