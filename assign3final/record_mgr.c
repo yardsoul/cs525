@@ -127,7 +127,7 @@ RC createTable (char *name, Schema *schema) {
 
 
 /*******************************************************************
-* NAME :            Schema *deserializeSchema (char *serializedSchema) 
+* NAME :            Schema *deserializeSchema (char *serializedSchema)
 *
 * DESCRIPTION :     Deserialize schema into variable
 *
@@ -875,7 +875,7 @@ int getRecordSize (Schema *schema) {
 *            	int *typeLength			Length data
 *            	int keySize					Size of key
 *            	int *keys					Pointer to keys
-* 
+*
 *
 * RETURN :
 *            	Type:   Schema                   	Created schema
@@ -911,7 +911,7 @@ Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *t
 *
 * PARAMETERS:
 *            	Schema *schema 				Schema wanted to be free
-* 
+*
 *
 * RETURN :
 *            	Type:   RC                   	Return Code:
@@ -932,15 +932,20 @@ RC freeSchema (Schema *schema) {
 	return RC_OK;
 }
 
+
+/************************************************************
+ *       DEALING WITH RECORDS AND ATTRIBUTE VALUES          *
+ ************************************************************/
+
 /*******************************************************************
-* NAME :            RC createRecord (Record **record, Schema *schema) 
+* NAME :            RC createRecord (Record **record, Schema *schema)
 *
 * DESCRIPTION :     create record
 *
 * PARAMETERS:
 *            	Record **record			Pointer to a record
 * 				Schema *schema				Schema of the record
-* 
+*
 *
 * RETURN :
 *            	Type:   RC                   	Return Code:
@@ -956,7 +961,6 @@ RC freeSchema (Schema *schema) {
 *            2016-02-31     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
 *
 *******************************************************************/
-// dealing with records and attribute values
 RC createRecord (Record **record, Schema *schema) {
 	int size = getRecordSize(schema);
 	Record *r = (Record*) malloc (sizeof(Record));
@@ -972,7 +976,7 @@ RC createRecord (Record **record, Schema *schema) {
 *
 * PARAMETERS:
 *            	Record *record 				Record wanted to be free
-* 
+*
 *
 * RETURN :
 *            	Type:   RC                   	Return Code:
@@ -1004,7 +1008,7 @@ RC freeRecord (Record *record) {
 * 				Schema *schema					Schema of the record
 * 				int attrNum						Position of the attribute needed to be read
 * 				Value **value					Output
-* 
+*
 *
 * RETURN :
 *            	Type:   RC                   	Return Code:
@@ -1079,7 +1083,7 @@ RC getAttr (Record *record, Schema *schema, int attrNum, Value **value) {
 * 				Schema *schema					Schema of the record
 * 				int attrNum						Position of the attribute needed to be set
 * 				Value *value					value address needed to be set
-* 
+*
 *
 * RETURN :
 *            	Type:   RC                   	Return Code:
