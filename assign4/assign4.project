@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Project Name="assign3final" InternalType="">
+<CodeLite_Project Name="assign4" InternalType="">
   <Description/>
   <Dependencies/>
   <Settings Type="Executable">
@@ -54,7 +54,9 @@
       </Completion>
     </Configuration>
   </Settings>
-  <VirtualDirectory Name="assign3final">
+  <VirtualDirectory Name="assign4">
+    <File Name="btree_mgr.c"/>
+    <File Name="btree_mgr.h"/>
     <File Name="buffer_mgr.c"/>
     <File Name="buffer_mgr.h"/>
     <File Name="buffer_mgr_stat.c"/>
@@ -70,6 +72,7 @@
     <File Name="storage_mgr.c"/>
     <File Name="storage_mgr.h"/>
     <File Name="tables.h"/>
+    <File Name="test_assign4_1.c"/>
     <File Name="test_expr.c"/>
     <File Name="test_helper.h"/>
   </VirtualDirectory>

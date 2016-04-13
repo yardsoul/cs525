@@ -1,0 +1,203 @@
+CS 525 Assignment 3 04/01/2016 
+
+Record Manager: Implements a record manager that can navigate through records and modify them.
+
+Personnel Information
+----------------------
+Team members:
+Patipat Duangchalomnin
+Email: pduangchalomnin@hawk.iit.edu
+Github username: pduangchalomnin
+CWID: A20351140
+
+Adrian Tirados Mata
+Email: atirados@hawk.iit.edu
+Github username: atirados
+CWID: A20362186
+
+Yung Chi Shih
+Email: yshih2@hawk.iit.edu
+Github username: yshih2
+CWID: A20337574
+
+Arpita Rathore (Team Representative)
+Email: arathore@hawk.iit.edu
+Github username: arathore1
+CWID: A20340002
+=========================================================================================================================
+
+File List
+----------
+
+README.txt
+Makefile
+buffer_mgr.h
+buffer_mgr.c
+buffer_mgr_stat.c
+buffer_mgr_stat.h
+dberror.c
+dberror.h
+dt.h
+expr.c
+expr.h
+record_mgr.c
+record_mgr.h
+rm_serializer.c
+storage_mgr.c
+storage_mgr.h
+tables.h
+test_assign3_1.c
+test_expr.c
+test_helper.h
+
+
+Milestone
+----------
+2016-03-21	Initialization of methods
+2016-03-30	Compiled code
+2016-03-31  Fixed all bugs and test passed OK
+2016-03-31	Code tested on fourier server
+	
+
+
+
+Installation instructions
+--------------------------
+The team has provided a Makefile to make the installation easier. 
+
+To install the program, simply run the command 'make' in the folder where all the files are stored. This command will create a series of compiled .o files, and a single file called 'testOutput'. This file contains the compiled test case.
+
+To run the program, execute './testOutput' in the folder where it is stored. This will automatically run the desired tests.
+
+In addition, there is another test file provided. To execute it, simply run ./test_expr_Output.
+
+Finally, in order to clean the directory, execute 'make clean', which will delete all .o files, all .bin files and testOutput file as well.
+
+
+Function descriptions
+----------------------
+-- Table and Record Manager Functions --
+NAME: RC initRecordManager (void *mgmtData)
+DESCRIPTION: Initializes the record manager. 
+
+NAME: RC shutdownRecordManager ()
+DESCRIPTION: Terminates the record manager.
+
+NAME: RC createTable (char *name, Schema *schema)
+DESCRIPTION: Creates a table with the given name and schema, and stores the schema information on the first page.
+
+NAME: Schema *deserializeSchema (char *serializedSchema)
+DESCRIPTION: Deserialize schema into variable.
+
+NAME: RC openTable (RM_TableData *rel, char *name)
+DESCRIPTION: Opens the given table (previously created) and stores relevant data on memory.
+
+NAME: RC closeTable (RM_TableData *rel)
+DESCRIPTION: Closes the given table (previously opened) and frees the memory.
+
+NAME: RC deleteTable (char *name)
+DESCRIPTION: Deletes the given table (previously created).
+
+NAME: int getNumTuples (RM_TableData *rel)
+DESCRIPTION: Returns the number of tuples in the table.
+
+
+-- Record Functions --
+NAME: RC insertRecord (RM_TableData *rel, Record *record)
+DESCRIPTION: Inserts the given record on the table specified. To do so, it iterates through the file trying to calculate a page number and slot number where the record can be stored.
+
+NAME: RC deleteRecord (RM_TableData *rel, RID id)
+DESCRIPTION: Deletes a record identified by an id in the given table. We have not implemented the tombstone functionality, so a simple Return Code is enough.
+
+NAME: RC updateRecord (RM_TableData *rel, Record *record)
+DESCRIPTION: Updates the given record on the table specified. It uses the page and slot number to locate the record and then saves the new information in the file.
+
+NAME: RC getRecord (RM_TableData *rel, RID id, Record *record)
+DESCRIPTION: Gets the record indicated by the ID in the parameters from the table specified and then saves it in the memory allocated for *record.
+
+
+-- Scan Functions --
+NAME: RC startScan (RM_TableData *rel, RM_ScanHandle *scan, Expr *cond)
+DESCRIPTION: Gets the record indicated by the ID in the parameters from the table specified and then saves it in the memory allocated for *record.
+
+NAME: RC next (RM_ScanHandle *scan, Record *record)
+DESCRIPTION: Returns the next record that fulfills the scan condition in a recursive way.
+
+NAME: RC closeScan (RM_ScanHandle *scan)
+DESCRIPTION: Closes the scan.
+
+
+-- Schema Functions --
+NAME: int getRecordSize (Schema *schema)
+DESCRIPTION: Gets the size of a record in the given schema.
+
+NAME: Schema *createSchema (int numAttr, char **attrNames, DataType *dataTypes, int *typeLength, int keySize, int *keys) 
+DESCRIPTION: Create a schema and fill schema with assigned parameter.
+
+NAME: RC freeSchema (Schema *schema)
+DESCRIPTION: Free the memory of given schema.
+
+
+-- Attribute Functions --
+NAME: RC createRecord (Record **record, Schema *schema)
+DESCRIPTION: Create record.
+
+NAME: RC freeRecord (Record *record)
+DESCRIPTION: Free the memory of given record.
+
+NAME: RC getAttr (Record *record, Schema *schema, int attrNum, Value **value)
+DESCRIPTION: Get specific attribute from record.
+
+NAME: RC setAttr (Record *record, Schema *schema, int attrNum, Value *value)
+DESCRIPTION: Set specific attribute from record.
+
+
+=========================================================================================================================
+
+Additional error codes: of all additional error codes
+------------------------------------------------------
+RC_TABLE_NOT_FOUND 402	Error produced when we cannot find a table on disk
+
+Data structure: main data structure used
+-----------------------------------------
+The data structure we use is:
+
+1) ScanInfo: this struct contains useful information for the scan functions.
+
+It has the following elements:
+
+typedef struct ScanInfo
+{
+	// Current page scanned
+	int currentPage;
+	// Current slot scanned
+	int currentSlot;
+	// Total number of pages in the data file 
+	int totalNumPages;
+	// Total number of slots per page
+	int totalNumSlots;
+	// Condition searched in the scan 
+	Expr *condition;
+	
+	
+} ScanInfo;
+
+
+
+Extra credit: of all extra credits
+-----------------------------------
+
+Additional files: of all additional files
+------------------------------------------
+
+Test cases: of all additional test cases added
+-----------------------------------------------
+
+
+
+Problems solved
+----------------
+
+
+Problems to be solved
+----------------------

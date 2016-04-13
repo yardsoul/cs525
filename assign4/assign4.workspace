@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<CodeLite_Workspace Name="assign3final" Database="">
-  <Project Name="assign3final" Path="assign3final.project" Active="Yes"/>
+<CodeLite_Workspace Name="assign4" Database="">
+  <Project Name="assign4" Path="assign4.project" Active="Yes"/>
   <BuildMatrix>
     <WorkspaceConfiguration Name="Debug" Selected="yes">
       <Environment/>
-      <Project Name="assign3final" ConfigName="Debug"/>
+      <Project Name="assign4" ConfigName="Debug"/>
     </WorkspaceConfiguration>
     <WorkspaceConfiguration Name="Release" Selected="yes">
       <Environment/>
-      <Project Name="assign3final" ConfigName="Debug"/>
+      <Project Name="assign4" ConfigName="Debug"/>
     </WorkspaceConfiguration>
   </BuildMatrix>
 </CodeLite_Workspace>
