@@ -180,12 +180,11 @@ RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
 				index = j;
 			}
 		}
+		BTreeInfo *tmpBTree = (BTreeInfo *) malloc (sizeof(BTreeInfo));
 
-		 BTreeInfo *tmpBTree = (BTreeInfo *) malloc (sizeof(BTreeInfo));
-
-		 tmpBTree = bTree[i];
-		 bTree[i] = bTree[index];
-		 bTree[index] = tmpBTree;
+		tmpBTree = bTree[i];
+		bTree[i] = bTree[index];
+		bTree[index] = tmpBTree;
 //	printf("sss\n");
 //		Value tmpValue;
 //		RID tmpRID;
@@ -205,8 +204,9 @@ RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
 //		bTree[index]->val.v.intV = tmpValue.v.intV;
 //		bTree[index]->rid.page = tmpRID.page;
 //		bTree[index]->rid.slot = tmpRID.slot;
-		return RC_OK;
+//		
 	}
+	return RC_OK;
 }
 
 RC nextEntry (BT_ScanHandle *handle, RID *result) {
