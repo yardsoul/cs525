@@ -95,19 +95,79 @@ RC getKeyType (BTreeHandle *tree, DataType *result) {
 
 // index access
 RC findKey (BTreeHandle *tree, Value *key, RID *result) {
-	
+	if(searchKey(tree,key)!= -1) {
+		result->page = bTree[i]->rid.page;
+		result->slot = bTree[i]->rid.slot;
+		return RC_OK;
+	}
+	return RC_IM_KEY_NOT_FOUND;
+}
+
+int searchKey (BTreeHandle *tree, Value *key) {
+	int i=0;
+	for(int i=0;i<nodeNum; i++) {
+		if(bTree[i]->val.dt == key->dt 
+			&& ((bTree[i]->val.dt == DT_INT &&  bTree[i]->val.v.intV == key->v.intV)
+			|| (bTree[i]->val.dt == DT_FLOAT && bTree[i]->val.v.floatV == key->v.floatV)
+			|| (bTree[i]->val.dt == DT_STRING && strcmp(bTree[i]->val.v.stringV,key->v.stringV)==0))) {
+				return i;
+			}
+		}
+	}
+	return -1;
 }
 
 RC insertKey (BTreeHandle *tree, Value *key, RID rid) {
-
+	bTree[nodeNum] = (BTreeInfo *)malloc(sizeof(BTreeInfo));
+	RID *findResult = (RID *)malloc(sizeof(RID));
+	
+	if(findKey(tree,key,x) == RC_IM_KEY_NOT_FOUND) {
+		bTree[nodeNum]->rid.page = rid.page;
+		bTree[nodeNum]->rid.slot = rid.slot;
+		bTree[nodeNum]->val.dt = key->dt;
+		if(key->dt == DT_INT) {
+			bTree[nodeNum]->val.v.intV = key->v.intV;
+		}
+		else if(key->dt == DT_FLOAT) {
+			bTree[nodeNum]->val.v.floatV = key->v.floatV;
+		}
+		else if(key->dt == DT_STRING) {
+			strcpy(bTree[nodeNum]->val.v.stringV,key->v.stringV);
+		}
+		nodeNum++;
+		return RC_OK;
+	}
+	else {
+		return RC_IM_KEY_ALREADY_EXISTS;
+	}
 }
 
 RC deleteKey (BTreeHandle *tree, Value *key) {
-
+	int index = searchKey(tree,key);
+	if(index != -1) {
+		int i = index;
+		index++;
+		for(; i < nodeNum && index < nodeNum;i++,index++) {
+			bTree[i]->rid.page = bTree[index->rid.page];
+			bTree[i]->rid.slot = bTree[index->rid.slot];
+			bTree[i]->val.dt = bTree[index]->val.dt;
+			if(key->dt == DT_INT) {
+				bTree[i]->val.v.intV = bTree[index]->val.v.intV;
+			}
+			else if(key->dt == DT_FLOAT) {
+				bTree[i]->val.v.floatV = bTree[index]->val.v.floatV;
+			}
+			else if(key->dt == DT_STRING) {
+				strcpy(bTree[i]->val.v.stringV,bTree[index]->val.v.stringV);
+			}
+		}
+		free(bTree[i]);
+		return RC_OK;
+	}
+	return RC_IM_KEY_NOT_FOUND;
 }
 
 RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
-
 }
 
 RC nextEntry (BT_ScanHandle *handle, RID *result) {
@@ -115,10 +175,11 @@ RC nextEntry (BT_ScanHandle *handle, RID *result) {
 }
 
 RC closeTreeScan (BT_ScanHandle *handle) {
-
+	free(handle);
+	return RC_OK;
 }
 
 // debug and test functions
 char *printTree (BTreeHandle *tree) {
-
+	return tree->idxId;
 }
