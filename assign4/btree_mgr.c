@@ -185,26 +185,6 @@ RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
 		tmpBTree = bTree[i];
 		bTree[i] = bTree[index];
 		bTree[index] = tmpBTree;
-//	printf("sss\n");
-//		Value tmpValue;
-//		RID tmpRID;
-//
-//		tmpValue.dt = bTree[i]->val.dt;
-//		tmpValue.v.intV = bTree[i]->val.v.intV;
-//		tmpRID.page = bTree[i]->rid.page;
-//		tmpRID.slot = bTree[i]->rid.slot;
-//printf("%d\n",bTree[i]->val.dt);
-//		bTree[i]->val.dt = bTree[index]->val.dt;
-//		printf("333\n");
-//		bTree[i]->val.v.intV = bTree[index]->val.v.intV;
-//		bTree[i]->rid.page = bTree[index]->rid.page;
-//		bTree[i]->rid.slot = bTree[index]->rid.slot;
-//
-//		bTree[index]->val.dt = tmpValue.dt;
-//		bTree[index]->val.v.intV = tmpValue.v.intV;
-//		bTree[index]->rid.page = tmpRID.page;
-//		bTree[index]->rid.slot = tmpRID.slot;
-//		
 	}
 	return RC_OK;
 }
