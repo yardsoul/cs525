@@ -73,7 +73,7 @@ RC closeBtree (BTreeHandle *tree) {
 RC deleteBtree (char *idxId) {
 	nodeNum = 0;
 	nextNode = 0;
-	free(idxId);
+	//free(idxId);
 
 	return RC_OK;
 }
@@ -163,7 +163,7 @@ RC deleteKey (BTreeHandle *tree, Value *key) {
 				strcpy(bTree[i]->val.v.stringV, bTree[index]->val.v.stringV);
 			}
 		}
-		free(bTree[i]);
+		// free(bTree[i]);
 		return RC_OK;
 	}
 	return RC_IM_KEY_NOT_FOUND;
