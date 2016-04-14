@@ -73,7 +73,6 @@ RC closeBtree (BTreeHandle *tree) {
 RC deleteBtree (char *idxId) {
 	nodeNum = 0;
 	nextNode = 0;
-	//free(idxId);
 
 	return RC_OK;
 }
