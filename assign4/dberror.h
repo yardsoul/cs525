@@ -27,6 +27,10 @@ typedef int RC;
 #define RC_IM_N_TO_LAGE 302
 #define RC_IM_NO_MORE_ENTRIES 303
 
+#define RC_PINNED_PAGES 400
+#define RC_PAGE_NOT_FOUND 401
+#define RC_TABLE_NOT_FOUND 402
+
 /* holder for error messages */
 extern char *RC_message;
 

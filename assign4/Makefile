@@ -3,8 +3,8 @@ all: test_assign4_1 test_expr
 test_assign4_1: test_assign4_1.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o expr.o record_mgr.o rm_serializer.o btree_mgr.o
 	gcc -o testOutput test_assign4_1.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o expr.o record_mgr.o rm_serializer.o btree_mgr.o
 
-test_assign4_1.o: test_assign3_1.c test_helper.h dberror.h storage_mgr.h buffer_mgr.h buffer_mgr_stat.h expr.h record_mgr.h btree_mgr.h
-	gcc -c test_assign3_1.c
+test_assign4_1.o: test_assign4_1.c test_helper.h dberror.h storage_mgr.h buffer_mgr.h buffer_mgr_stat.h expr.h record_mgr.h btree_mgr.h
+	gcc -c test_assign4_1.c
 
 test_expr: test_expr.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o expr.o record_mgr.o rm_serializer.o btree_mgr.o
 	gcc -o test_expr_Output test_expr.o storage_mgr.o dberror.o buffer_mgr.o buffer_mgr_stat.o expr.o record_mgr.o rm_serializer.o btree_mgr.o

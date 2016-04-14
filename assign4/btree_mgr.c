@@ -1,10 +1,13 @@
+#include <string.h>
+#include <stdlib.h>
+
 #include "btree_mgr.h"
 #include "buffer_mgr.h"
 #include "record_mgr.h"
 #include "storage_mgr.h"
 #include "tables.h"
 
-struct BTreeInfo
+typedef struct BTreeInfo
 {
 	struct Value val;
 	struct RID rid;
@@ -14,6 +17,20 @@ BTreeInfo **bTree;
 
 int nodeNum;
 int nextNode;
+
+int searchKey (BTreeHandle *tree, Value *key) {
+	int i;
+	for (i = 0; i < nodeNum; i++) {
+		if (bTree[i]->val.dt == key->dt
+		        && ((bTree[i]->val.dt == DT_INT &&  bTree[i]->val.v.intV == key->v.intV)
+		            || (bTree[i]->val.dt == DT_FLOAT && bTree[i]->val.v.floatV == key->v.floatV)
+		            || (bTree[i]->val.dt == DT_STRING && strcmp(bTree[i]->val.v.stringV, key->v.stringV) == 0))) {
+			return i;
+		}
+	}
+
+	return -1;
+}
 
 // init and shutdown index manager
 RC initIndexManager (void *mgmtData) {
@@ -64,7 +81,6 @@ RC deleteBtree (char *idxId) {
 // access information about a b-tree
 RC getNumNodes (BTreeHandle *tree, int *result) {
 	int counter = 0;
-	int result = 0;
 	int i;
 	int j;
 
@@ -95,7 +111,8 @@ RC getKeyType (BTreeHandle *tree, DataType *result) {
 
 // index access
 RC findKey (BTreeHandle *tree, Value *key, RID *result) {
-	if (searchKey(tree, key) != -1) {
+	int i = searchKey(tree, key);
+	if (i != -1) {
 		result->page = bTree[i]->rid.page;
 		result->slot = bTree[i]->rid.slot;
 		return RC_OK;
@@ -103,25 +120,10 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result) {
 	return RC_IM_KEY_NOT_FOUND;
 }
 
-int searchKey (BTreeHandle *tree, Value *key) {
-	int i;
-	for (i = 0; i < nodeNum; i++) {
-		if (bTree[i]->val.dt == key->dt
-		        && ((bTree[i]->val.dt == DT_INT &&  bTree[i]->val.v.intV == key->v.intV)
-		            || (bTree[i]->val.dt == DT_FLOAT && bTree[i]->val.v.floatV == key->v.floatV)
-		            || (bTree[i]->val.dt == DT_STRING && strcmp(bTree[i]->val.v.stringV, key->v.stringV) == 0))) {
-			return i;
-		}
-	}
-
-	return -1;
-}
-
 RC insertKey (BTreeHandle *tree, Value *key, RID rid) {
 	bTree[nodeNum] = (BTreeInfo *)malloc(sizeof(BTreeInfo));
-	// RID *findResult = (RID *)malloc(sizeof(RID));
 
-	if (findKey(tree, key, x) == RC_IM_KEY_NOT_FOUND) {
+	if (searchKey(tree, key) == -1) {
 		bTree[nodeNum]->rid.page = rid.page;
 		bTree[nodeNum]->rid.slot = rid.slot;
 		bTree[nodeNum]->val.dt = key->dt;
@@ -148,8 +150,8 @@ RC deleteKey (BTreeHandle *tree, Value *key) {
 		int i = index;
 		index++;
 		for (; i < nodeNum && index < nodeNum; i++, index++) {
-			bTree[i]->rid.page = bTree[index->rid.page];
-			bTree[i]->rid.slot = bTree[index->rid.slot];
+			bTree[i]->rid.page = bTree[index]->rid.page;
+			bTree[i]->rid.slot = bTree[index]->rid.slot;
 			bTree[i]->val.dt = bTree[index]->val.dt;
 			if (key->dt == DT_INT) {
 				bTree[i]->val.v.intV = bTree[index]->val.v.intV;
@@ -186,9 +188,9 @@ RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
 		RID tmpRID;
 
 		tmpValue.dt = bTree[i]->val.dt;
-		tmpValue.v.intV = bTree[i].val.v.intV;
-		tmpRID.page = bTree[i].rid.page;
-		tmpRID.slot = bTree[i].rid.slot;
+		tmpValue.v.intV = bTree[i]->val.v.intV;
+		tmpRID.page = bTree[i]->rid.page;
+		tmpRID.slot = bTree[i]->rid.slot;
 
 		bTree[i]->val.dt = bTree[j]->val.dt;
 		bTree[i]->val.v.intV = bTree[j]->val.v.intV;
