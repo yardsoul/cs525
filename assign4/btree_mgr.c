@@ -163,7 +163,8 @@ RC deleteKey (BTreeHandle *tree, Value *key) {
 				strcpy(bTree[i]->val.v.stringV, bTree[index]->val.v.stringV);
 			}
 		}
-		// free(bTree[i]);
+		free(bTree[i+1]);
+		nodeNum--;
 		return RC_OK;
 	}
 	return RC_IM_KEY_NOT_FOUND;
@@ -180,32 +181,31 @@ RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
 			}
 		}
 
-		// BTreeInfo *tmpBTree = (BTreeInfo *) malloc (sizeof(BTreeInfo));
+		 BTreeInfo *tmpBTree = (BTreeInfo *) malloc (sizeof(BTreeInfo));
 
-		// tmpBTree = bTree[i];
-
-		Value tmpValue;
-		RID tmpRID;
-
-		tmpValue.dt = bTree[i]->val.dt;
-		tmpValue.v.intV = bTree[i]->val.v.intV;
-		tmpRID.page = bTree[i]->rid.page;
-		tmpRID.slot = bTree[i]->rid.slot;
-
-		bTree[i]->val.dt = bTree[j]->val.dt;
-		bTree[i]->val.v.intV = bTree[j]->val.v.intV;
-		bTree[i]->rid.page = bTree[j]->rid.page;
-		bTree[i]->rid.slot = bTree[j]->rid.slot;
-
-		bTree[j]->val.dt = tmpValue.dt;
-		bTree[j]->val.v.intV = tmpValue.v.intV;
-		bTree[j]->rid.page = tmpRID.page;
-		bTree[j]->rid.slot = tmpRID.slot;
-
+		 tmpBTree = bTree[i];
+		 bTree[i] = bTree[index];
+		 bTree[index] = tmpBTree;
+//	printf("sss\n");
+//		Value tmpValue;
+//		RID tmpRID;
+//
+//		tmpValue.dt = bTree[i]->val.dt;
+//		tmpValue.v.intV = bTree[i]->val.v.intV;
+//		tmpRID.page = bTree[i]->rid.page;
+//		tmpRID.slot = bTree[i]->rid.slot;
+//printf("%d\n",bTree[i]->val.dt);
+//		bTree[i]->val.dt = bTree[index]->val.dt;
+//		printf("333\n");
+//		bTree[i]->val.v.intV = bTree[index]->val.v.intV;
+//		bTree[i]->rid.page = bTree[index]->rid.page;
+//		bTree[i]->rid.slot = bTree[index]->rid.slot;
+//
+//		bTree[index]->val.dt = tmpValue.dt;
+//		bTree[index]->val.v.intV = tmpValue.v.intV;
+//		bTree[index]->rid.page = tmpRID.page;
+//		bTree[index]->rid.slot = tmpRID.slot;
 		return RC_OK;
-
-
-
 	}
 }
 
