@@ -1,22 +1,29 @@
 #include <string.h>
 #include <stdlib.h>
-
 #include "btree_mgr.h"
 #include "buffer_mgr.h"
 #include "record_mgr.h"
 #include "storage_mgr.h"
 #include "tables.h"
 
+// Data structure that holds information about each node on the B+-Tree.
 typedef struct BTreeInfo
 {
+	// Value structure that contains the data type of the record indexed by the node
 	struct Value val;
+	// RID structure that contains the page and slot identifiers for the indexed record
 	struct RID rid;
 } BTreeInfo;
 
+// Array of BTreeInfo structs that contains the different nodes of the B+-Tree
 BTreeInfo **bTree;
 
+// Global variable that contains the total number of nodes
 int nodeNum;
+
+// Global variable that indicates the next node in the scan functions
 int nextNode;
+
 
 int searchKey (BTreeHandle *tree, Value *key) {
 	int i;
@@ -32,70 +39,248 @@ int searchKey (BTreeHandle *tree, Value *key) {
 	return -1;
 }
 
-// init and shutdown index manager
+/************************************************************
+ *            INIT AND SHUTDOWN INDEX MANAGER               *
+ ************************************************************/
+
+/*******************************************************************
+* NAME :            RC initIndexManager (void *mgmtData)
+*
+* DESCRIPTION :     Initializes the index manager by setting a pointer to the memory that contains the B+-Tree
+*					with a size of 50.
+*
+* PARAMETERS:
+*            	void *mgmtData					Pointer to memory reserved for management data
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Index manager initialized succesfully
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC initIndexManager (void *mgmtData) {
+	// Create a pointer to the memory that will contain up to 50 nodes
 	bTree = (BTreeInfo **) malloc (sizeof(BTreeInfo *) * 50);
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC shutdownIndexManager ()
+*
+* DESCRIPTION :     Terminates the index manager.
+*
+* PARAMETERS:
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Index manager terminated succesfully
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC shutdownIndexManager () {
 	free(bTree);
 	return RC_OK;
 }
 
-// create, destroy, open, and close an btree index
+
+/************************************************************
+ *     CREATE, DESTROY, OPEN, AND CLOSE A BTREE INDEX       *
+ ************************************************************/
+
+/*******************************************************************
+* NAME :            RC createBtree (char *idxId, DataType keyType, int n)
+*
+* DESCRIPTION :     Creates a B Tree with the given arguments
+*
+* PARAMETERS:
+*            	char *idxId 					B Tree identifier
+*				DataType keyType 				Data type of the B Tree
+*				int n 							Node number
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	B Tree created succesfully
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC createBtree (char *idxId, DataType keyType, int n) {
+	// Initialize the B Tree handle pointer
 	BTreeHandle *btHandle;
 	btHandle = (BTreeHandle *) malloc (sizeof(BTreeHandle) * 3);
 
+	// Fill in the handle information
 	btHandle->keyType = keyType;
 	btHandle->idxId = idxId;
 
+	// Set the global variables to 0
 	nodeNum = 0;
 	nextNode = 0;
 
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC openBtree (BTreeHandle **tree, char *idxId)
+*
+* DESCRIPTION :     Opens a B Tree identified by its id
+*
+* PARAMETERS:
+*				BTreeHandle **tree 				Pointer to the B Tree array
+*            	char *idxId 					B Tree identifier
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	B Tree opened succesfully
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC openBtree (BTreeHandle **tree, char *idxId) {
+	// Aññpcate memory
 	*tree = (BTreeHandle *) malloc (sizeof(BTreeHandle) * 3);
 	(*tree)->idxId = (char *) malloc (sizeof(char) * (strlen(idxId) + 1));
+
+	// Set the idxId
 	(*tree)->idxId = idxId;
 
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC closeBtree (BTreeHandle *tree)
+*
+* DESCRIPTION :     Closes a B Tree passed as a parameter
+*
+* PARAMETERS:
+*				BTreeHandle *tree 				Pointer to the B Tree to be closed
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	B Tree closed succesfully
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC closeBtree (BTreeHandle *tree) {
 	free(tree);
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC deleteBtree (char *idxId)
+*
+* DESCRIPTION :     Deletes a B Tree identified by its id
+*
+* PARAMETERS:
+*				char *idxId 					B Tree identifier
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	B Tree deleted succesfully
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC deleteBtree (char *idxId) {
+	// Set global variables to 0
 	nodeNum = 0;
 	nextNode = 0;
-
 	return RC_OK;
 }
 
-// access information about a b-tree
+/************************************************************
+ *            ACCESS INFORMATION ABOUT A B-TREE             *
+ ************************************************************/
+
+/*******************************************************************
+* NAME :            RC getNumNodes (BTreeHandle *tree, int *result)
+*
+* DESCRIPTION :     Gets the total number of nodes in the B Tree
+*
+* PARAMETERS:
+*				BTreeHandle *tree 				Pointer to the B Tree
+*				int *result						Pointer to the integer containing the result
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Number returned successfully
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC getNumNodes (BTreeHandle *tree, int *result) {
+	// Initialize variable to iterate the tree
 	int counter = 0;
 	int i;
 	int j;
 
 	for (i = 0; i < nodeNum; i++) {
 		for (j = i - 1; j >= 0; j--) {
+			// If both pages are the same
 			if (bTree[j]->rid.page == bTree[i]->rid.page) {
+				// Increase the counter and break the inner loop
 				counter++;
 				break;
 			}
 		}
 	}
 
+	// Return result = total number of nodes - repeated nodes
 	*result = nodeNum - counter;
 
 	return RC_OK;
-
 }
 
 RC getNumEntries (BTreeHandle *tree, int *result) {
@@ -108,7 +293,11 @@ RC getKeyType (BTreeHandle *tree, DataType *result) {
 	return RC_OK;
 }
 
-// index access
+/************************************************************
+ *                    INDEX ACCESS                          *
+ ************************************************************/
+
+
 RC findKey (BTreeHandle *tree, Value *key, RID *result) {
 	int i = searchKey(tree, key);
 	if (i != -1) {
@@ -162,7 +351,7 @@ RC deleteKey (BTreeHandle *tree, Value *key) {
 				strcpy(bTree[i]->val.v.stringV, bTree[index]->val.v.stringV);
 			}
 		}
-		free(bTree[i+1]);
+		free(bTree[i + 1]);
 		nodeNum--;
 		return RC_OK;
 	}
@@ -188,14 +377,42 @@ RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC nextEntry (BT_ScanHandle *handle, RID *result)
+*
+* DESCRIPTION :     Calculates the next entry in the given scan
+*
+* PARAMETERS:
+*				BT_ScanHandle *handle 			Pointer to the information about the scan
+*				RID *result 					Pointer to the result RID (page and slot)
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Next entry returned successfully
+*						RC_IM_NO_MORE_ENTRIES	No more entries to scan
+*
+* AUTHOR :
+*			 	Adrian Tirados <atirados@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Adrian Tirados <atirados@hawk.iit.edu>   Initialization
+*            2016-02-15     Adrian Tirados <atirados@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC nextEntry (BT_ScanHandle *handle, RID *result) {
+	// Check if the next node to scan is still in bounds
 	if (nextNode < nodeNum) {
+		// Return the next node information
 		result->page = bTree[nextNode]->rid.page;
 		result->slot = bTree[nextNode]->rid.slot;
+		// Increase the next node counter
 		nextNode++;
 		return RC_OK;
 	}
 
+	// If out of bounds, there are no more entries to scan
 	return RC_IM_NO_MORE_ENTRIES;
 }
 
@@ -204,7 +421,11 @@ RC closeTreeScan (BT_ScanHandle *handle) {
 	return RC_OK;
 }
 
-// debug and test functions
+
+/************************************************************
+ *                DEBUG AND TEST FUNCTIONS                  *
+ ************************************************************/
+
 char *printTree (BTreeHandle *tree) {
 	return tree->idxId;
 }
