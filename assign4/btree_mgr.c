@@ -24,7 +24,29 @@ int nodeNum;
 // Global variable that indicates the next node in the scan functions
 int nextNode;
 
-
+/*******************************************************************
+* NAME :            int searchKey (BTreeHandle *tree, Value *key)
+*
+* DESCRIPTION :     Search for the index of given key in tree
+*
+* PARAMETERS:
+*            	BTreeHandle *tree					Pointer to tree
+* 				Value *key							Key needed to be found
+*
+* RETURN :
+*            	Type:   int                   	
+*            	Values: Index of the key, -1 if not found
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 int searchKey (BTreeHandle *tree, Value *key) {
 	int i;
 	for (i = 0; i < nodeNum; i++) {
@@ -51,7 +73,7 @@ int searchKey (BTreeHandle *tree, Value *key) {
 *
 * PARAMETERS:
 *            	void *mgmtData					Pointer to memory reserved for management data
-*
+* 
 * RETURN :
 *            	Type:   RC                   	Returned code:
 *            	Values: RC_OK                  	Index manager initialized succesfully
@@ -283,11 +305,57 @@ RC getNumNodes (BTreeHandle *tree, int *result) {
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC getNumEntries (BTreeHandle *tree, int *result)
+*
+* DESCRIPTION :     Get the number of nodes
+*
+* PARAMETERS:
+*            	BTreeHandle *tree					Pointer to tree
+* 				int *result							Pointer to result variable
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Number returned successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC getNumEntries (BTreeHandle *tree, int *result) {
 	*result = nodeNum;
 	return RC_OK;
 }
 
+/*******************************************************************
+* NAME :            RC getKeyType (BTreeHandle *tree, DataType *result)
+*
+* DESCRIPTION :     Get data type of tree
+*
+* PARAMETERS:
+*            	BTreeHandle *tree					Pointer to tree
+* 				DataType *result							Pointer to result variable
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	DataType returned successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC getKeyType (BTreeHandle *tree, DataType *result) {
 	*result = tree->keyType;
 	return RC_OK;
@@ -297,7 +365,31 @@ RC getKeyType (BTreeHandle *tree, DataType *result) {
  *                    INDEX ACCESS                          *
  ************************************************************/
 
-
+/*******************************************************************
+* NAME :            RC findKey (BTreeHandle *tree, Value *key, RID *result)
+*
+* DESCRIPTION :     Look for a given key in tree
+*
+* PARAMETERS:
+*            	BTreeHandle *tree					Pointer to tree
+* 				Value *key							Pointer to search key
+* 				RID *result							Pointer to result variable
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Key found and returned successfully
+* 						RC_IM_KEY_NOT_FOUND		Key not found
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC findKey (BTreeHandle *tree, Value *key, RID *result) {
 	int i = searchKey(tree, key);
 	if (i != -1) {
@@ -308,6 +400,31 @@ RC findKey (BTreeHandle *tree, Value *key, RID *result) {
 	return RC_IM_KEY_NOT_FOUND;
 }
 
+/*******************************************************************
+* NAME :            RC insertKey (BTreeHandle *tree, Value *key, RID rid)
+*
+* DESCRIPTION :     Insert new node to tree
+*
+* PARAMETERS:
+*            	BTreeHandle *tree					Pointer to tree
+* 				Value *key							Pointer to key to be added
+* 				RID rid							RID of node to be added
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Node added successfully
+* 						RC_IM_KEY_ALREADY_EXISTS		Key already exists
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC insertKey (BTreeHandle *tree, Value *key, RID rid) {
 	bTree[nodeNum] = (BTreeInfo *)malloc(sizeof(BTreeInfo));
 
@@ -332,6 +449,30 @@ RC insertKey (BTreeHandle *tree, Value *key, RID rid) {
 	}
 }
 
+/*******************************************************************
+* NAME :            RC deleteKey (BTreeHandle *tree, Value *key)
+*
+* DESCRIPTION :     Delete key from tree
+*
+* PARAMETERS:
+*            	BTreeHandle *tree					Pointer to tree
+* 				Value *key							Pointer to key needed to be delete
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Node deleted successfully
+* 						RC_IM_KEY_NOT_FOUND		No key in given tree
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC deleteKey (BTreeHandle *tree, Value *key) {
 	int index = searchKey(tree, key);
 	if (index != -1) {
@@ -358,6 +499,29 @@ RC deleteKey (BTreeHandle *tree, Value *key) {
 	return RC_IM_KEY_NOT_FOUND;
 }
 
+/*******************************************************************
+* NAME :            RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle)
+*
+* DESCRIPTION :     Sort key in tree
+*
+* PARAMETERS:
+*            	BTreeHandle *tree					Pointer to tree
+* 				BT_ScanHandle **handle				TBD
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	Sorted successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC openTreeScan (BTreeHandle *tree, BT_ScanHandle **handle) {
 	int i;
 	for (i = 0; i < nodeNum - 1; i++) {
@@ -416,6 +580,29 @@ RC nextEntry (BT_ScanHandle *handle, RID *result) {
 	return RC_IM_NO_MORE_ENTRIES;
 }
 
+
+/*******************************************************************
+* NAME :            RC closeTreeScan (BT_ScanHandle *handle)
+*
+* DESCRIPTION :     free allocated memory from handle
+*
+* PARAMETERS:
+* 				BT_ScanHandle **handle				handle needed to be free
+*
+* RETURN :
+*            	Type:   RC                   	Returned code:
+*            	Values: RC_OK                  	free successfully
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 RC closeTreeScan (BT_ScanHandle *handle) {
 	free(handle);
 	return RC_OK;
@@ -425,7 +612,29 @@ RC closeTreeScan (BT_ScanHandle *handle) {
 /************************************************************
  *                DEBUG AND TEST FUNCTIONS                  *
  ************************************************************/
-
+ 
+/*******************************************************************
+* NAME :            *printTree (BTreeHandle *tree)
+*
+* DESCRIPTION :     Debug method 
+*
+* PARAMETERS:
+* 				BTreeHandle *tree			tree wanted to debug
+*
+* RETURN :
+*            	Type:   char*
+*            	Values: idxId of the given tree
+*
+* AUTHOR :
+*			 	Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>
+*
+* HISTORY :
+*            DATE       	WHO     				                 DETAIL
+*            -----------    ---------------------------------------  ---------------------------------
+*            2016-04-13	    Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Initialization
+*            2016-02-18     Patipat Duangchalomnin <pduangchalomnin@hawk.iit.edu>   Added comments and header comment
+*
+*******************************************************************/
 char *printTree (BTreeHandle *tree) {
 	return tree->idxId;
 }
